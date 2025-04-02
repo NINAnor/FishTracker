@@ -696,20 +696,24 @@ class SonarFigure(ZoomableQLabel):
         painter.setPen(QtCore.Qt.white)
         if self.sonar_viewer.getSwimDirection():
             painter.drawText(
-                max(20, 0.05 * self.window_width), 0.95 * self.window_height, "UP"
+                int(max(20, 0.05 * self.window_width)),
+                int(0.95 * self.window_height),
+                "UP",
             )
             painter.drawText(
-                self.window_width - max(20, 0.05 * self.window_width) - 30,
-                0.95 * self.window_height,
+                int(self.window_width - max(20, 0.05 * self.window_width) - 30),
+                int(0.95 * self.window_height),
                 "DOWN",
             )
         else:
             painter.drawText(
-                max(20, 0.05 * self.window_width), 0.95 * self.window_height, "DOWN"
+                int(max(20, 0.05 * self.window_width)),
+                int(0.95 * self.window_height),
+                "DOWN",
             )
             painter.drawText(
-                self.window_width - max(20, 0.05 * self.window_width) - 10,
-                0.95 * self.window_height,
+                int(self.window_width - max(20, 0.05 * self.window_width) - 10),
+                int(0.95 * self.window_height),
                 "UP",
             )
 
