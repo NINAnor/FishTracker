@@ -20,7 +20,7 @@ import file_handlers.beamLookUp as beamLookUp
 import numpy as np
 import re
 import cv2
-
+import array
 
 cwd = os.getcwd()
 JSON_FILE_PATH = cwd + "/file_handlers/v3/v3_file_headers_info.json"
@@ -343,7 +343,7 @@ def setWindowLength(configFlags, index, cls):
     return
 
 def setFirstBeamAngle(highResolution, cls):
-    cls.firstBeamAngle = beamLookUp.BeamLookUp(cls.BEAM_COUNT, highResolution)[-1]
+    cls.firstBeamAngle = beamLookUp.BeamLookUp(cls.BEAM_COUNT, 0)[-1]
 
     return    
 
@@ -355,6 +355,7 @@ def v3_getAllFramesData(fhand, version, cls):
         - SONAR Sample Data     --> `allFrames`
         - Number of Beams [fl]  --> `numRawBeams`
         - Samples Per Beam [fl] --> `samplesPerChannel`
+        - Mount orientation [fl]--> 'reverse'
         - Type of Lens  [fr]    --> `largeLens`
         - Sample Start Delay[fr]--> `sampleStartDelay`
         - Sound Velocity[fr]    --> `soundSpeed`
@@ -365,7 +366,7 @@ def v3_getAllFramesData(fhand, version, cls):
     ## TODO _
     
     cls.version = "DDF_03"
-    fileAttributesList = ["numRawBeams", "samplesPerChannel", "frameCount", "highResolution", "serialNumber"]
+    fileAttributesList = ["numRawBeams", "samplesPerChannel", "reverse", "frameCount", "highResolution", "serialNumber"]
     frameAttributesList = ["configFlags", "windowStart", "windowLengthIndex"]
 
     fileHeader = utils.getFileHeaderValue(version, fileAttributesList)
@@ -395,6 +396,12 @@ def v3_getAllFramesData(fhand, version, cls):
     cls.samplesPerBeam = struct.unpack(
             utils.cType[fileHeader["samplesPerChannel"]["size"]],
             fhand.read(utils.c(fileHeader["samplesPerChannel"]["size"])))[0]
+
+     #   Reading sonar mount orientation [from file header]
+    fhand.seek(fileHeader["reverse"]["location"], 0)
+    cls.reverse = struct.unpack(
+            utils.cType[fileHeader["reverse"]["size"]],
+            fhand.read(utils.c(fileHeader["reverse"]["size"])))[0]
 
     #   Reading Serial number of file format to decide configuration flags later
     #   [from file header]
@@ -434,15 +441,15 @@ def v3_getAllFramesData(fhand, version, cls):
                 utils.cType[frameHeader["configFlags"]["size"]],
                 fhand.read(utils.c(frameHeader["configFlags"]["size"])))[0]
         ## bit0: 1=classic, 0=extended windows; bit1: 0=Standard, 1=LR
-        configFlagsStr = bin(configFlags)
-        configFlags = 2 * int(configFlagsStr[-2]) + int(configFlagsStr[-1])
-        ## TODO _ : this needs to be completed
 
+        # configFlagsStr = bin(configFlags) # Doesn't include 0's at the front
+        configFlagsStr = '{:032b}'.format(configFlags) # 32bit has zeros at the front
+        # Maybe irrelevant. No testing with configflags 1 or 3 
+        configFlags = 2 * int(configFlagsStr[-2]) + int(configFlagsStr[-1]) 
+
+        ## TODO _ : this needs to be completed
     
-    
-    
-    windowLengthIndex = windowLengthIndex + 1 + 2 * (cls.highResolution == 0)
-    
+    windowLengthIndex = windowLengthIndex + 2 * (highResolution == 0)
 
     setWindowLength(configFlags, windowLengthIndex, cls)
     setWindowStart(configFlags, highResolution, cls)
@@ -457,5 +464,5 @@ def v3_getAllFramesData(fhand, version, cls):
     cls.FRAMES = cv2.flip(cls.FRAMES.reshape((cls.samplesPerBeam, cls.BEAM_COUNT)), 0)
     cls.DATA_SHAPE = cls.FRAMES.shape
     
-    cls.FRAMES = cls.constructImages()
+    cls.FRAMES = cls.constructImages(cls.FRAMES)
     return
