@@ -1,0 +1,37 @@
+[dependency-groups]
+dev = [
+  "deptry",
+  "pre-commit"
+]
+
+[project]
+authors = [
+  {name = "taheeraahmed", email = "taheera.ahmed@nina.no"}
+]
+dependencies = [
+  "django-environ",
+  "opencv-python",
+  "PyQt5==5.12.3",
+  "filterpy==1.4.5",
+  "scikit-image",
+  "seaborn",
+  "scikit-learn",
+  "jinja2",
+  "numba",
+  # formerly msgpack-python
+  "msgpack",
+  "numpy",
+]
+description = ""
+license = {text = "GPL-3.0+"}
+name = "fishtracker"
+readme = "README.md"
+requires-python = "~=3.8"
+version = "0.1.0"
+
+[tool.ruff]
+fix = true
+
+[tool.ruff.lint]
+ignore = ["COM812"]
+select = ["E", "W", "I", "F", "UP", "S", "B", "A", "COM", "LOG", "PTH", "Q"]
