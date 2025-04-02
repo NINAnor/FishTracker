@@ -6,32 +6,12 @@ Fish Tracker is an application for semi-automatic tracking and counting of fish 
 
 ## Run with Python
 
-First, you need to install `uv` which is a new and improved Python package manager.
+First, you need to install `nix` which is a package manager for Linux and MacOS. It can be installed by running the following command in the terminal:
 
-Create a new virtual environment:
-
-```bash
-python -m venv fish_tracker_env
-```
-
-Activate the virtual environment:
-
-- On Windows:
+### For Linux and MacOS
 
 ```bash
-fish_tracker_env\Scripts\activate
-```
-
-- On Linux or Mac:
-
-```bash
-source fish_tracker_env/bin/activate
-```
-
-Then you can install the required dependencies by running:
-
-```bash
-uv install -r pyproject.toml
+nix-shell
 ```
 
 And run the program:
@@ -39,6 +19,10 @@ And run the program:
 ```bash
 python main.py
 ```
+
+### For Windows
+
+Hehe haven't had the time to look into this :)
 
 ## Quickstart guide
 
@@ -58,13 +42,13 @@ python main.py
 
 PyInstaller can be used to bundle the source code into a single package with all the required dependecies. The following command does this based on the configuration file "fish_tracker.spec". At the project root, run:
 
-```
+```bash
 pyinstaller fish_tracker.spec
 ```
 
 or
 
-```
+```bash
 pyinstaller fish_tracker.spec --noconfirm
 ```
 
