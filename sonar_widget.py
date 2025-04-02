@@ -670,11 +670,27 @@ class SonarFigure(ZoomableQLabel):
     def drawUpDown(self, painter):
         painter.setPen(QtCore.Qt.white)
         if self.sonar_viewer.getSwimDirection():
-            painter.drawText(max(20, 0.05 * self.window_width), 0.95 * self.window_height, "UP")
-            painter.drawText(self.window_width - max(20, 0.05 * self.window_width) - 30, 0.95 * self.window_height, "DOWN")
+            painter.drawText(
+                int(max(20, 0.05 * self.window_width)),
+                int(0.95 * self.window_height),
+                "UP",
+            )
+            painter.drawText(
+                int(self.window_width - max(20, 0.05 * self.window_width) - 30),
+                int(0.95 * self.window_height),
+                "DOWN",
+            )
         else:
-            painter.drawText(max(20, 0.05 * self.window_width), 0.95 * self.window_height, "DOWN")
-            painter.drawText(self.window_width - max(20, 0.05 * self.window_width) - 10, 0.95 * self.window_height, "UP")
+            painter.drawText(
+                int(max(20, 0.05 * self.window_width)),
+                int(0.95 * self.window_height),
+                "DOWN",
+            )
+            painter.drawText(
+                int(self.window_width - max(20, 0.05 * self.window_width) - 10),
+                int(0.95 * self.window_height),
+                "UP",
+            )
 
     def drawDepthAxis(self, painter):
         # Draw depth axis
