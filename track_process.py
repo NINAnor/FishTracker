@@ -17,65 +17,42 @@ You should have received a copy of the GNU General Public License
 along with Fish Tracker.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import argparse
+import sys, os, cv2
+import argparse, time
 import multiprocessing as mp
-import os
-import sys
-import time
+from queue import Queue
 from dataclasses import dataclass
+from PyQt5 import QtCore, QtGui, QtWidgets
+from pathlib import Path
 
-import cv2
-from PyQt5 import QtCore, QtWidgets
-
-import file_handler as fh
-from detector import Detector, DetectorParameters
-from fish_manager import FishManager
-from log_object import LogObject
 from playback_manager import PlaybackManager, TestFigure
+from detector import Detector, DetectorParameters
+from tracker import Tracker, AllTrackerParameters, TrackerParameters, FilterParameters, TrackingState
+from fish_manager import FishManager
 from save_manager import SaveManager
-from tracker import Tracker, TrackingState
-
+from output_widget import WriteStream, StreamReceiver
+import file_handler as fh
+from log_object import LogObject
 
 def getDefaultParser(getArgs=False):
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-d",
-        "--display",
-        default=False,
-        action="store_true",
-        help="display frames as the patch is processed",
-    )
-    parser.add_argument(
-        "-f",
-        "--file",
-        type=argparse.FileType("r"),
-        nargs="*",
-        help=".aris file(s) to be processed",
-    )
-    parser.add_argument(
-        "-t",
-        "--test",
-        default=False,
-        action="store_true",
-        help="use test file (if exists)",
-    )
+    parser.add_argument('-d', '--display', default=False, action='store_true', help="display frames as the patch is processed")
+    parser.add_argument('-f', '--file', type=argparse.FileType('r'), nargs='*', help=".aris file(s) to be processed")
+    parser.add_argument('-t', '--test', default=False, action='store_true', help="use test file (if exists)")
     if getArgs:
         return parser.parse_args()
     else:
         return parser
 
-
-def getFiles(args=None):
+def getFiles(args = None):
     files = []
     if args is not None and args.file:
-        files = [f.name for f in args.file]
+         files = [f.name for f in args.file]
     elif args is not None and args.test:
         files = [fh.getTestFilePath()]
     else:
         dir = fh.getLatestDirectory()
-        filePathTuple = QtWidgets.QFileDialog.getOpenFileNames(
-            None, "Open File", dir, "Sonar Files (*.aris *.ddf)"
-        )
+        filePathTuple = QtWidgets.QFileDialog.getOpenFileNames(None, "Open File", dir, "Sonar Files (*.aris *.ddf)")
         files = [f for f in filePathTuple[0]]
         try:
             fh.setLatestDirectory(os.path.dirname(files[0]))
@@ -84,35 +61,32 @@ def getFiles(args=None):
 
     return files
 
-
-def writeToFile(value, mode="a"):
+def writeToFile(value, mode='a'):
     with open("track_process_io.txt", mode) as f:
         f.write(str(value) + "\n")
 
-
 @dataclass
 class TrackProcessInfo:
-    display: bool
-    file: str
-    save_directory: str
-    connection: mp.connection._ConnectionBase
-    params_detector_dict: dict = None
-    params_tracker_dict: dict = None
-    secondary_tracking: bool = False
-    test_file: bool = False
+        display: bool
+        file: str
+        save_directory: str
+        connection: mp.connection._ConnectionBase
+        params_detector_dict: dict = None
+        params_tracker_dict: dict = None
+        secondary_tracking: bool = False
+        test_file: bool = False
 
-    # Save detections to a text file
-    save_detections: bool = False
+        # Save detections to a text file
+        save_detections: bool =False
 
-    # Save tracks to a text file
-    save_tracks: bool = False
+        # Save tracks to a text file
+        save_tracks: bool = False
 
-    # Save complete results with save manager
-    save_complete: bool = False
+        # Save complete results with save manager
+        save_complete: bool = False
 
-    # Save results as a binary file
-    as_binary: bool = True
-
+        # Save results as a binary file
+        as_binary: bool = True
 
 class TrackProcess(QtCore.QObject):
     """
@@ -125,6 +99,7 @@ class TrackProcess(QtCore.QObject):
     exit_signal = QtCore.pyqtSignal()
 
     def __init__(self, app: QtWidgets.QApplication, info: TrackProcessInfo):
+
         super().__init__()
         self.app = app
         self.info = info
@@ -155,33 +130,27 @@ class TrackProcess(QtCore.QObject):
         self.setParametersFromDict(info.params_detector_dict, info.params_tracker_dict)
 
         self.fish_manager = FishManager(self.playback_manager, self.tracker)
-        self.save_manager = SaveManager(
-            self.playback_manager, self.detector, self.tracker, self.fish_manager
-        )
+        self.save_manager = SaveManager(self.playback_manager, self.detector, self.tracker, self.fish_manager)
 
         self.playback_manager.fps = 100
         self.playback_manager.runInThread(self.listenConnection)
 
         log = LogObject()
         log.disconnectDefault()
-        # log.connect(writeToFile)
+        #log.connect(writeToFile)
         log.connect(self.writeToConnection)
         log.print("Process created for file: ", self.file)
 
-    def setParametersFromDict(
-        self, params_detector_dict: dict, params_tracker_dict: dict
-    ):
+    def setParametersFromDict(self, params_detector_dict: dict, params_tracker_dict: dict):
         if params_detector_dict is not None:
-            params_detector = DetectorParameters(
-                self.detector.bg_subtractor.mog_parameters
-            )
+            params_detector = DetectorParameters(self.detector.bg_subtractor.mog_parameters)
             params_detector.setParameterDict(params_detector_dict)
             self.detector.parameters = params_detector
 
         if params_tracker_dict is not None:
-            # params_tracker = AllTrackerParameters(TrackerParameters(), FilterParameters(), TrackerParameters())
-            # params_tracker.setParameterDict(params_tracker_dict)
-            # self.tracker.setAllParameters(params_tracker)
+            #params_tracker = AllTrackerParameters(TrackerParameters(), FilterParameters(), TrackerParameters())
+            #params_tracker.setParameterDict(params_tracker_dict)
+            #self.tracker.setAllParameters(params_tracker)
             self.tracker.setAllParametersFromDict(params_tracker_dict)
 
     def writeToConnection(self, value):
@@ -232,7 +201,7 @@ class TrackProcess(QtCore.QObject):
             self.playback_manager.openTestFile()
         else:
             self.playback_manager.loadFile(self.file)
-
+            
         LogObject().print("Frame count:", self.playback_manager.getFrameCount())
 
         if self.display:
@@ -272,7 +241,7 @@ class TrackProcess(QtCore.QObject):
         """
         base_name = os.path.basename(self.file)
         file_name = os.path.splitext(base_name)[0]
-        file_path = os.path.join(self.save_directory, f"{file_name}{end_string}")
+        file_path = os.path.join(self.save_directory, "{}{}".format(file_name, end_string))
         return file_path
 
     def saveResults(self):
@@ -304,7 +273,6 @@ class TrackProcess(QtCore.QObject):
         self.alive = False
         self.app.quit()
 
-
 def trackProcess(process_info: TrackProcessInfo):
     app = QtWidgets.QApplication(sys.argv)
     process = TrackProcess(app, process_info)
@@ -312,12 +280,10 @@ def trackProcess(process_info: TrackProcessInfo):
     sys.exit(app.exec_())
 
 
-# TODO: Fix test code
+#TODO: Fix test code
 if __name__ == "__main__":
     save_directory = fh.getLatestSaveDirectory()
     args = getDefaultParser(getArgs=True)
     file = getFiles(args)
-    info = TrackProcessInfo(
-        file=file[0], save_directory=save_directory, test_file=args.test
-    )
+    info = TrackProcessInfo(file=file[0], save_directory=save_directory, test_file=args.test)
     trackProcess(args.display, info)

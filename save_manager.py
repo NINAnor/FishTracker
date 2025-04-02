@@ -17,21 +17,20 @@ You should have received a copy of the GNU General Public License
 along with Fish Tracker.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import sys, os, cv2
 import json
-import os
-import sys
-
+from PyQt5 import QtCore, QtGui, QtWidgets
 import msgpack
-from PyQt5 import QtCore, QtWidgets
+import time
 
 import file_handler as fh
+from playback_manager import PlaybackManager
 from detector import Detector
+from tracker import Tracker
 from fish_manager import FishManager
 from log_object import LogObject
-from playback_manager import PlaybackManager
-from tracker import Tracker
 
-r"""
+"""
 File format as follows:
 {
     "file type": "FishTracker"
@@ -84,200 +83,192 @@ File format as follows:
 }
 """
 
-
 class SaveManager(QtCore.QObject):
-    file_loaded_event = QtCore.pyqtSignal()
 
-    def __init__(
-        self,
-        playback_manager: PlaybackManager,
-        detector: Detector,
-        tracker: Tracker,
-        fish_manager: FishManager,
-    ):
-        super().__init__()
+	file_loaded_event = QtCore.pyqtSignal()
 
-        self.playback_manager = playback_manager
-        self.detector = detector
-        self.tracker = tracker
-        self.fish_manager = fish_manager
+	def __init__(self, playback_manager: PlaybackManager, detector: Detector, tracker: Tracker, fish_manager: FishManager):
+		super().__init__()
 
-        self.fast_save_enabled = False
-        self.previous_path = None
+		self.playback_manager = playback_manager
+		self.detector = detector
+		self.tracker = tracker
+		self.fish_manager = fish_manager
 
-        self.temp_data = None
+		self.fast_save_enabled = False
+		self.previous_path = None
 
-        self.playback_manager.file_closed.connect(self.onFileClosed)
+		self.temp_data = None
 
-    def saveFile(self, path: str, binary: bool):
-        """
-        Saves the contents of detector and tracker and the corresponding parameters to file.
-        """
+		self.playback_manager.file_closed.connect(self.onFileClosed)
 
-        LogObject().print1(f"Saving data to '{path}'")
+	def saveFile(self, path: str, binary: bool):
+		"""
+		Saves the contents of detector and tracker and the corresponding parameters to file.
+		"""
 
-        self.previous_path = path
-        self.fast_save_enabled = True
+		LogObject().print1(f"Saving data to '{path}'")
 
-        dp_dict = self.detector.getParameterDict()
+		self.previous_path = path
+		self.fast_save_enabled = True
 
-        tp = self.tracker.getAllParameters()
-        tp_dict = None if tp is None else tp.getParameterDict()
+		dp_dict = self.detector.getParameterDict()
 
-        detections = self.detector.getSaveDictionary()
-        fish = self.fish_manager.getSaveDictionary()
+		tp = self.tracker.getAllParameters()
+		tp_dict = None if tp is None else tp.getParameterDict()
 
-        data = {"file type": "FishTracker", "version": "0.1"}
-        data["path"] = os.path.abspath(self.playback_manager.path)
-        data["inverted upstream"] = self.fish_manager.up_down_inverted
-        data["detector"] = dp_dict
-        data["tracker"] = tp_dict
-        data["detections"] = detections
-        data["fish"] = fish
-        self.saveData(path, data, binary)
+		detections = self.detector.getSaveDictionary()
+		fish = self.fish_manager.getSaveDictionary()
 
-    def saveData(self, path: str, data: dict, binary: bool, update_dict: bool = True):
-        """
-        Write the data (dictionary) to a file.
-        """
-        if binary:
-            packed = msgpack.packb(data)
-            with open(path, "wb") as data_file:
-                data_file.write(packed)
-        else:
-            with open(path, "w") as data_file:
-                json.dump(data, data_file, indent=2, separators=(",", ": "))
+		data = { "file type": "FishTracker", "version": "0.1" }
+		data["path"] = os.path.abspath(self.playback_manager.path)
+		data["inverted upstream"] = self.fish_manager.up_down_inverted
+		data["detector"] = dp_dict
+		data["tracker"] = tp_dict
+		data["detections"] = detections
+		data["fish"] = fish
+		self.saveData(path, data, binary)
 
-        fh.setLatestSaveDirectory(os.path.dirname(path))
+	def saveData(self, path: str, data: dict, binary: bool, update_dict: bool = True):
+		"""
+		Write the data (dictionary) to a file.
+		"""
+		if binary:
+			packed = msgpack.packb(data)
+			with open(path, "wb") as data_file:
+				data_file.write(packed)
+		else:
+			with open(path, "w") as data_file:
+				json.dump(data, data_file, indent=2, separators=(',', ': '))
 
-    def loadFile(self, path: str):
-        try:
-            try:
-                with open(path) as data_file:
-                    data = json.load(data_file)
-                    self.loadData(data, path)
+		fh.setLatestSaveDirectory(os.path.dirname(path))
 
-            except UnicodeDecodeError:
-                with open(path, "rb") as data_file:
-                    byte_data = data_file.read()
-                    data = msgpack.unpackb(byte_data)
-                    self.loadData(data, path)
+	def loadFile(self, path: str):
+		try:
+			try:
+				with open(path, "r") as data_file:
+					data = json.load(data_file)
+					self.loadData(data, path)
 
-        except FileNotFoundError:
-            LogObject().print(f"File {path} not found")
-            return False
+			except UnicodeDecodeError:
+				with open(path, "rb") as data_file:
+					byte_data = data_file.read()
+					data = msgpack.unpackb(byte_data)
+					self.loadData(data, path)
 
-        except json.JSONDecodeError:
-            LogObject().print("Invalid JSON file".format())
-            return False
+		except FileNotFoundError:
+			LogObject().print("File {} not found".format(path))
+			return False
 
-        # except:
-        # LogObject().print("Unexpected error:", sys.exc_info()[1])
-        # return False
+		except json.JSONDecodeError:
+			LogObject().print("Invalid JSON file".format(path))
+			return False
 
-        self.previous_path = path
-        self.fast_save_enabled = True
-        self.file_loaded_event.emit()
-        return True
+		#except:
+		#	LogObject().print("Unexpected error:", sys.exc_info()[1])
+		#	return False
 
-    def loadData(self, data: dict, path: str):
-        try:
-            file_path = os.path.abspath(data["path"])
-            secondary_path = os.path.abspath(
-                os.path.join(os.path.dirname(path), os.path.basename(file_path))
-            )
-            self.temp_data = data
+		self.previous_path = path
+		self.fast_save_enabled = True
+		self.file_loaded_event.emit()
+		return True
 
-            if self.playback_manager.checkLoadedFile(file_path, secondary_path, True):
-                # If file already open
-                self.setLoadedData()
-            else:
-                self.playback_manager.polars_loaded.connect(self.setLoadedData)
+	def loadData(self, data: dict, path: str):
+		try:
+			file_path = os.path.abspath(data["path"])
+			secondary_path = os.path.abspath(os.path.join(os.path.dirname(path), os.path.basename(file_path)))
+			self.temp_data = data
 
-        except ValueError as e:
-            LogObject().print("Error: Invalid value(s) in save file,", e)
-            self.playback_manager.closeFile()
-        except KeyError as e:
-            LogObject().print("Error: Invalid key(s) in save file,", e)
-            self.playback_manager.closeFile()
+			if self.playback_manager.checkLoadedFile(file_path, secondary_path, True):
+				# If file already open
+				self.setLoadedData()
+			else:
+				self.playback_manager.polars_loaded.connect(self.setLoadedData)
 
-    def setLoadedData(self):
-        try:
-            self.fish_manager.setUpDownInversion(self.temp_data["inverted upstream"])
+		except ValueError as e:
+			LogObject().print("Error: Invalid value(s) in save file,", e)
+			self.playback_manager.closeFile()
+		except KeyError as e:
+			LogObject().print("Error: Invalid key(s) in save file,", e)
+			self.playback_manager.closeFile()
 
-            self.tracker.setAllParametersFromDict(self.temp_data["tracker"])
 
-            self.detector.applySaveDictionary(
-                self.temp_data["detector"], self.temp_data["detections"]
-            )
+	def setLoadedData(self):
+		try:
+			self.fish_manager.setUpDownInversion(self.temp_data["inverted upstream"])
 
-            dets = self.detector.detections
-            self.fish_manager.applySaveDictionary(self.temp_data["fish"], dets)
+			self.tracker.setAllParametersFromDict(self.temp_data["tracker"])
 
-        except ValueError as e:
-            self.playback_manager.closeFile()
-            LogObject().print("Error: Invalid value(s) in save file,", e)
-        except KeyError as e:
-            self.playback_manager.closeFile()
-            LogObject().print("Error: Key not found in save file,", e)
-        finally:
-            self.temp_data = None
-            try:
-                self.playback_manager.polars_loaded.disconnect(self.setLoadedData)
-            except TypeError:
-                pass
+			self.detector.applySaveDictionary(self.temp_data["detector"], self.temp_data["detections"])
 
-    def onFileClosed(self):
-        self.previous_path = None
-        self.fast_save_enabled = False
-        try:
-            self.playback_manager.polars_loaded.disconnect(self.setLoadedData)
-        except TypeError:
-            pass
+			dets = self.detector.detections
+			self.fish_manager.applySaveDictionary(self.temp_data["fish"], dets)
+
+		except ValueError as e:
+			self.playback_manager.closeFile()
+			LogObject().print("Error: Invalid value(s) in save file,", e)
+		except KeyError as e:
+			self.playback_manager.closeFile()
+			LogObject().print("Error: Key not found in save file,", e)
+		finally:
+			self.temp_data = None
+			try:
+				self.playback_manager.polars_loaded.disconnect(self.setLoadedData)
+			except TypeError:
+				pass
+
+	def onFileClosed(self):
+		self.previous_path = None
+		self.fast_save_enabled = False
+		try:
+			self.playback_manager.polars_loaded.disconnect(self.setLoadedData)
+		except TypeError:
+			pass
 
 
 if __name__ == "__main__":
-    path = "D:/Projects/VTT/FishTracking/save_test.fish"
+	path = "D:/Projects/VTT/FishTracking/save_test.fish"
 
-    def saveTest():
-        def startDetector():
-            detector.initMOG()
-            detector.computeAll()
-            tracker.primaryTrack()
+	def saveTest():
+		def startDetector():
+			detector.initMOG()
+			detector.computeAll()
+			tracker.primaryTrack()
 
-        app = QtWidgets.QApplication(sys.argv)
-        main_window = QtWidgets.QMainWindow()
-        playback_manager = PlaybackManager(app, main_window)
-        detector = Detector(playback_manager)
-        tracker = Tracker(detector)
-        fish_manager = FishManager(playback_manager, tracker)
+		app = QtWidgets.QApplication(sys.argv)
+		main_window = QtWidgets.QMainWindow()
+		playback_manager = PlaybackManager(app, main_window)
+		detector = Detector(playback_manager)
+		tracker = Tracker(detector)
+		fish_manager = FishManager(playback_manager, tracker)
+	
+	
+		save_manager = SaveManager(playback_manager, detector, tracker, fish_manager)
 
-        save_manager = SaveManager(playback_manager, detector, tracker, fish_manager)
+		fish_manager.updateContentsSignal.connect(lambda: save_manager.saveFile(path, True))
 
-        fish_manager.updateContentsSignal.connect(
-            lambda: save_manager.saveFile(path, True)
-        )
+		playback_manager.openTestFile()
+		detector._show_detections = True
+		playback_manager.mapping_done.connect(startDetector)
 
-        playback_manager.openTestFile()
-        detector._show_detections = True
-        playback_manager.mapping_done.connect(startDetector)
+		main_window.show()
+		sys.exit(app.exec_())
 
-        main_window.show()
-        sys.exit(app.exec_())
+	def loadTest():
+		app = QtWidgets.QApplication(sys.argv)
+		main_window = QtWidgets.QMainWindow()
+		playback_manager = PlaybackManager(app, main_window)
+		detector = Detector(playback_manager)
+		tracker = Tracker(detector)
+		fish_manager = FishManager(playback_manager, tracker)
+	
+		save_manager = SaveManager(playback_manager, detector, tracker, fish_manager)
+		save_manager.loadFile(path)
 
-    def loadTest():
-        app = QtWidgets.QApplication(sys.argv)
-        main_window = QtWidgets.QMainWindow()
-        playback_manager = PlaybackManager(app, main_window)
-        detector = Detector(playback_manager)
-        tracker = Tracker(detector)
-        fish_manager = FishManager(playback_manager, tracker)
+		main_window.show()
+		sys.exit(app.exec_())
 
-        save_manager = SaveManager(playback_manager, detector, tracker, fish_manager)
-        save_manager.loadFile(path)
+	#saveTest()
+	loadTest()
 
-        main_window.show()
-        sys.exit(app.exec_())
 
-    # saveTest()
-    loadTest()

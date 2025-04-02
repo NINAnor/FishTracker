@@ -17,13 +17,10 @@ You should have received a copy of the GNU General Public License
 along with Fish Tracker.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from dataclasses import asdict, dataclass, fields
+from dataclasses import dataclass, fields, asdict
 from enum import Enum, auto
-
 from PyQt5 import QtCore
-
 from log_object import LogObject
-
 
 class ParametersBase(QtCore.QObject):
     """
@@ -47,9 +44,7 @@ class ParametersBase(QtCore.QObject):
         super().__init__()
         self.data = data
         self.emit_signal = True
-        self.fields = {
-            self.ParametersEnum[field.name]: field for field in fields(self.data)
-        }
+        self.fields = { self.ParametersEnum[field.name]: field for field in fields(self.data) }
 
     def getParameterDict(self):
         """
@@ -67,9 +62,7 @@ class ParametersBase(QtCore.QObject):
         self.emit_signal = False
 
         if type(dictionary) != dict:
-            raise TypeError(
-                f"Cannot set values of '{type(self).__name__}' from a '{type(dictionary).__name__}' object."
-            )
+            raise TypeError(f"Cannot set values of '{type(self).__name__}' from a '{type(dictionary).__name__}' object.")
 
         for key, value in dictionary.items():
             self.setKeyValuePair(key, value)
@@ -91,7 +84,7 @@ class ParametersBase(QtCore.QObject):
         """
         try:
             key = self.keyAsEnum(key)
-        except KeyError:
+        except KeyError as e:
             LogObject().print2(f"Error: Invalid key '{key}' in '{type(self).__name__}'")
             return False
 
@@ -100,10 +93,7 @@ class ParametersBase(QtCore.QObject):
             self.onValuesChanged()
             return True
         except (ValueError, TypeError) as e:
-            LogObject().print2(
-                f"Error: Invalid value '{value}' for key '{key}' in '{type(self).__name__}',",
-                e,
-            )
+            LogObject().print2(f"Error: Invalid value '{value}' for key '{key}' in '{type(self).__name__}',", e)
             return False
 
     def keyAsEnum(self, key):
@@ -127,11 +117,7 @@ class ParametersBase(QtCore.QObject):
         """
         Creates a new instance of the object with same parameter values.
         """
-        params = [
-            getattr(self.data, key.name)
-            for key in self.ParametersEnum
-            if hasattr(self.data, key.name)
-        ]
+        params = [getattr(self.data, key.name) for key in self.ParametersEnum if hasattr(self.data, key.name)]
         return type(self)(*params)
 
     def __eq__(self, other):
@@ -152,8 +138,8 @@ class ParametersBase(QtCore.QObject):
 
 
 if __name__ == "__main__":
-
     class TestParameters(ParametersBase):
+
         @dataclass
         class Parameters:
             test_value: int = 1
@@ -179,7 +165,11 @@ if __name__ == "__main__":
     except TypeError as e:
         print(e)
 
-    dictionary = {"wrong_parameter": 0, "wrong_type": test, "test_value": 5}
+    dictionary = {
+        "wrong_parameter" : 0,
+        "wrong_type": test,
+        "test_value": 5
+        }
     test.setParameterDict(dictionary)
 
     print("")

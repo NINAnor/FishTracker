@@ -17,31 +17,25 @@ You should have received a copy of the GNU General Public License
 along with Fish Tracker.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import io
-import sys
+import sys, io
 from datetime import datetime
-
-from PyQt5 import QtCore, QtWidgets
-
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Singleton(type):
     """
     A meta class for singleton type objects.
     """
-
     _instances = {}
-
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-            # print(cls._instances[cls])
+            #print(cls._instances[cls])
         return cls._instances[cls]
-
 
 class LogSignal(QtCore.QObject):
     signal = QtCore.pyqtSignal(str, int, str)
 
-
+        
 class LogObject(metaclass=Singleton):
     """
     Logging object that is easily accessible.
@@ -49,7 +43,6 @@ class LogObject(metaclass=Singleton):
     By default, the standard print function is connected, but this can be removed
     by using disconnectDefault.
     """
-
     def __init__(self):
         self.log_signal = LogSignal()
         self.connect(print)
@@ -62,8 +55,8 @@ class LogObject(metaclass=Singleton):
 
     def print_help(self, *args, **kwargs):
         with io.StringIO() as output:
-            kwargs["end"] = ""
-            kwargs["file"] = output
+            kwargs['end'] = ""
+            kwargs['file'] = output
             print(*args, **kwargs)
             return output.getvalue(), str(datetime.now().time())
 
@@ -72,11 +65,7 @@ class LogObject(metaclass=Singleton):
             try:
                 func(*args, **kwargs)
             except AttributeError as e:
-                print(
-                    "Potential misuse of LogObject. When calling print, remember to use LogObject() with parenthesis.",
-                    e,
-                )
-
+                print("Potential misuse of LogObject. When calling print, remember to use LogObject() with parenthesis.", e)
         return inner_function
 
     @exception_handler
@@ -85,7 +74,7 @@ class LogObject(metaclass=Singleton):
         Default print (verbosity=0) that is always printed.
         """
         output, time_stamp = self.print_help(*args, **kwargs)
-        self.log_signal.signal.emit(output, 0, time_stamp)
+        self.log_signal.signal.emit(output, 0, time_stamp)            
 
     @exception_handler
     def print1(self, *args, **kwargs):
@@ -104,10 +93,9 @@ class LogObject(metaclass=Singleton):
         """
         output, time_stamp = self.print_help(*args, **kwargs)
         self.log_signal.signal.emit(output, 2, time_stamp)
-
+            
     def disconnectDefault(self):
         self.disconnect(print)
-
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

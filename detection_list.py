@@ -17,11 +17,10 @@ You should have received a copy of the GNU General Public License
 along with Fish Tracker.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from PyQt5 import QtCore, QtWidgets
-
+from PyQt5 import QtCore, QtGui, QtWidgets
+from dropdown_delegate import DropdownDelegate
 from detector import Detector
 from log_object import LogObject
-
 
 class DetectionDataModel(QtCore.QAbstractTableModel):
     def __init__(self, detector):
@@ -73,7 +72,7 @@ class DetectionDataModel(QtCore.QAbstractTableModel):
                 elif section == 2:
                     return "Length (m)"
             else:
-                return f"{section: >4}"
+                return '{: >4}'.format(section)
 
     def checkLayout(self, count):
         if self.row_count != count:
@@ -84,11 +83,7 @@ class DetectionDataModel(QtCore.QAbstractTableModel):
         if not index.isValid():
             return Qt.ItemIsEnabled
 
-        return (
-            QtCore.Qt.ItemIsSelectable
-            | QtCore.Qt.ItemIsEditable
-            | QtCore.Qt.ItemIsEnabled
-        )
+        return QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled
 
 
 class DetectionList(QtWidgets.QWidget):
@@ -96,30 +91,34 @@ class DetectionList(QtWidgets.QWidget):
         super().__init__()
         self.data_model = data_model
 
-        # self.scroll = QtWidgets.QScrollArea(self)
-        # self.scroll.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        #self.scroll = QtWidgets.QScrollArea(self)
+        #self.scroll.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
 
         self.table = QtWidgets.QTableView(self)
-        self.table.setSizePolicy(
-            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
-        )
+        self.table.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.table.setModel(data_model)
         self.table.setSortingEnabled(True)
-        self.table.sortByColumn(0, QtCore.Qt.AscendingOrder)
-        self.table.setStyleSheet("QTableView\n" "{\n" "border: none;\n" "}\n" "")
+        self.table.sortByColumn(0, QtCore.Qt.AscendingOrder);
+        self.table.setStyleSheet("QTableView\n"
+                                 "{\n"
+                                 "border: none;\n"
+                                 "}\n"
+                                 "")
 
         self.vertical_layout = QtWidgets.QVBoxLayout()
         self.vertical_layout.setObjectName("verticalLayout")
         self.vertical_layout.addWidget(self.table)
         self.vertical_layout.setSpacing(0)
-        self.vertical_layout.setContentsMargins(0, 0, 0, 0)
+        self.vertical_layout.setContentsMargins(0,0,0,0)
         self.setLayout(self.vertical_layout)
+            
+
 
 
 if __name__ == "__main__":
     import sys
-
     from playback_manager import PlaybackManager
+    from fish_manager import FishManager
 
     def startDetector(playback_manager, detector):
         detector.initMOG()
@@ -140,9 +139,7 @@ if __name__ == "__main__":
         detector = Detector(playback_manager)
         detector.mog_parameters.nof_bg_frames = 100
 
-        playback_manager.mapping_done.connect(
-            lambda: startDetector(playback_manager, detector)
-        )
+        playback_manager.mapping_done.connect(lambda: startDetector(playback_manager, detector))
         playback_manager.frame_available.connect(lambda t: handleFrame(detector, t))
 
         data_model = DetectionDataModel(detector)
@@ -163,12 +160,11 @@ if __name__ == "__main__":
         file = playback_manager.selectLoadFile()
 
         playback_manager.openTestFile()
-        playback_manager.mapping_done.connect(
-            lambda: startDetector(playback_manager, detector)
-        )
+        playback_manager.mapping_done.connect(lambda: startDetector(playback_manager, detector))
 
         detector.loadDetectionsFromFile(file)
         LogObject().print([d for d in detector.detections if d is not None])
+       
 
         data_model = DetectionDataModel(detector)
         detection_list = DetectionList(data_model)
@@ -176,5 +172,5 @@ if __name__ == "__main__":
         main_window.show()
         sys.exit(app.exec_())
 
-    # defaultTest()
+    #defaultTest()
     loadTest()

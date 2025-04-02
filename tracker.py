@@ -17,30 +17,26 @@ You should have received a copy of the GNU General Public License
 along with Fish Tracker.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from enum import Enum
-
-import cv2
 import numpy as np
+import cv2
 import seaborn as sns
+from enum import Enum
+from sort import Sort, KalmanBoxTracker
 from PyQt5 import QtCore
-
+from tracker_parameters import TrackerParameters
 from filter_parameters import FilterParameters
 from log_object import LogObject
-from sort import KalmanBoxTracker, Sort
-from tracker_parameters import TrackerParameters
-
 
 class TrackingState(Enum):
     IDLE = 1
     PRIMARY = 2
     SECONDARY = 3
 
-
 class AllTrackerParameters:
     pass
 
-
 class Tracker(QtCore.QObject):
+
     # When new computation is started. Parameter: clear previous results.
     init_signal = QtCore.pyqtSignal(bool)
 
@@ -81,35 +77,24 @@ class Tracker(QtCore.QObject):
     def resetParameters(self):
         self.setParameters(TrackerParameters(), FilterParameters(), TrackerParameters())
 
-    def setParameters(
-        self, primary_parameters, filter_parameters, secondary_parameters
-    ):
+    def setParameters(self, primary_parameters, filter_parameters, secondary_parameters):
         if self.paramters is not None:
-            self.parameters.values_changed_signal.disconnect(
-                self.parameters_changed_signal
-            )
+            self.parameters.values_changed_signal.disconnect(self.parameters_changed_signal)
         self.parameters = primary_parameters
         self.parameters.values_changed_signal.connect(self.parameters_changed_signal)
 
         if self.filter_parameters is not None:
-            self.filter_parameters.values_changed_signal.disconnect(
-                self.parameters_changed_signal
-            )
+            self.filter_parameters.values_changed_signal.disconnect(self.parameters_changed_signal)
         self.filter_parameters = filter_parameters
-        self.filter_parameters.values_changed_signal.connect(
-            self.parameters_changed_signal
-        )
+        self.filter_parameters.values_changed_signal.connect(self.parameters_changed_signal)
 
         if self.secondary_parameters is not None:
-            self.secondary_parameters.values_changed_signal.disconnect(
-                self.parameters_changed_signal
-            )
+            self.secondary_parameters.values_changed_signal.disconnect(self.parameters_changed_signal)
         self.secondary_parameters = secondary_parameters
-        self.secondary_parameters.values_changed_signal.connect(
-            self.parameters_changed_signal
-        )
+        self.secondary_parameters.values_changed_signal.connect(self.parameters_changed_signal)
 
         self.parameters_changed_signal.emit()
+
 
     def primaryTrack(self):
         """
@@ -130,12 +115,8 @@ class Tracker(QtCore.QObject):
                 self.abortComputing(True)
                 return
 
-        LogObject().print1(
-            f"Primary tracking. Available detections: {self.detectionCount(self.detector.detections)}"
-        )
-        self.tracks_by_frame = self.trackDetections(
-            self.detector.detections, self.parameters, reset_count=True
-        )
+        LogObject().print1(f"Primary tracking. Available detections: {self.detectionCount(self.detector.detections)}")
+        self.tracks_by_frame = self.trackDetections(self.detector.detections, self.parameters, reset_count=True)
 
         self.applied_parameters = self.parameters.copy()
         self.applied_detector_parameters = self.detector.parameters.copy()
@@ -152,7 +133,7 @@ class Tracker(QtCore.QObject):
         Signals when the computation has finished.
 
         used_detections: Dictionary: frame_index -> list of detections in that frame.
-        tracker_parameters: TrackerParameters object containing the parameters for tracking.
+        tracker_parameters: TrackerParameters object containing the parameters for tracking. 
         """
 
         self.tracking_state = TrackingState.SECONDARY
@@ -169,12 +150,9 @@ class Tracker(QtCore.QObject):
             else:
                 detections[frame] = dets
 
-        LogObject().print1(
-            f"Secondary tracking. Available detections: {self.detectionCount(detections)}"
-        )
-        self.tracks_by_frame = self.trackDetections(
-            detections, tracker_parameters, reset_count=False
-        )
+
+        LogObject().print1(f"Secondary tracking. Available detections: {self.detectionCount(detections)}")
+        self.tracks_by_frame = self.trackDetections(detections, tracker_parameters, reset_count=False)
 
         self.applied_secondary_parameters = self.secondary_parameters.copy()
 
@@ -183,15 +161,11 @@ class Tracker(QtCore.QObject):
         self.all_computed_signal.emit(TrackingState.SECONDARY)
 
     def detectionCount(self, detections):
-        return (
-            0
-            if detections is None
+        return 0 if detections is None \
             else np.sum([len(dets) for dets in detections if dets is not None])
-        )
+        
 
-    def trackDetections(
-        self, detection_frames, tracker_parameters: TrackerParameters, reset_count=False
-    ):
+    def trackDetections(self, detection_frames, tracker_parameters: TrackerParameters, reset_count=False):
         """
         Tracks all detections in the given frames.
         Returns a dictionary containing tracks by frame.
@@ -202,17 +176,9 @@ class Tracker(QtCore.QObject):
         self.stop_tracking = False
         count = len(detection_frames)
         returned_tracks_by_frame = {}
-        mot_tracker = Sort(
-            max_age=tracker_parameters.getParameter(
-                TrackerParameters.ParametersEnum.max_age
-            ),
-            min_hits=tracker_parameters.getParameter(
-                TrackerParameters.ParametersEnum.min_hits
-            ),
-            search_radius=tracker_parameters.getParameter(
-                TrackerParameters.ParametersEnum.search_radius
-            ),
-        )
+        mot_tracker = Sort(max_age = tracker_parameters.getParameter(TrackerParameters.ParametersEnum.max_age),
+                           min_hits = tracker_parameters.getParameter(TrackerParameters.ParametersEnum.min_hits),
+                           search_radius = tracker_parameters.getParameter(TrackerParameters.ParametersEnum.search_radius))
 
         if reset_count:
             KalmanBoxTracker.count = 0
@@ -231,8 +197,8 @@ class Tracker(QtCore.QObject):
                 return {}
 
             returned_tracks_by_frame[i] = self.trackBase(mot_tracker, dets, i)
-
-        LogObject().print("Tracking: 100 %")
+                
+        LogObject().print("Tracking: 100 %")    
         return returned_tracks_by_frame
 
     def trackBase(self, mot_tracker, frame, ind):
@@ -241,29 +207,17 @@ class Tracker(QtCore.QObject):
         Returns (track, detection) if the track was updated this frame, otherwise (track, None).
         """
         if frame is None:
-            LogObject().print(
-                "Invalid detector results encountered at frame "
-                + str(ind)
-                + ". Consider rerunning the detector."
-            )
+            LogObject().print("Invalid detector results encountered at frame " + str(ind) +". Consider rerunning the detector.")
             return mot_tracker.update()
 
         detections = [d for d in frame if d.corners is not None]
         if len(detections) > 0:
-            dets = np.array(
-                [
-                    np.min(d.corners, 0).flatten().tolist()
-                    + np.max(d.corners, 0).flatten().tolist()
-                    for d in detections
-                ]
-            )
+            dets = np.array([np.min(d.corners,0).flatten().tolist() + np.max(d.corners,0).flatten().tolist() for d in detections])
             tracks = mot_tracker.update(dets)
         else:
             tracks = mot_tracker.update()
 
-        return [
-            (tr, detections[int(tr[7])]) if tr[7] >= 0 else (tr, None) for tr in tracks
-        ]
+        return [(tr, detections[int(tr[7])]) if tr[7] >= 0 else (tr, None) for tr in tracks]
 
     def abortComputing(self, detector_aborted):
         self.tracking_state = TrackingState.IDLE
@@ -282,54 +236,30 @@ class Tracker(QtCore.QObject):
 
         if ind not in self.tracks_by_frame:
             return image
-
-        colors = sns.color_palette("deep", len(self.tracks_by_frame[ind]))
+        
+        colors = sns.color_palette('deep', len(self.tracks_by_frame[ind]))
         for tr, det in self.tracks_by_frame[ind]:
+
             if self._show_id:
                 center = [(tr[0] + tr[2]) / 2, (tr[1] + tr[3]) / 2]
-                image = cv2.putText(
-                    image,
-                    "ID: " + str(int(tr[4])),
-                    (int(center[1]) - 20, int(center[0]) + 25),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5,
-                    (255, 255, 255),
-                    1,
-                    cv2.LINE_AA,
-                )
+                image = cv2.putText(image, "ID: " + str(int(tr[4])), (int(center[1])-20, int(center[0])+25),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1, cv2.LINE_AA)
 
             if self._show_detection_size and det is not None:
                 det.visualize(image, colors, True, False)
 
             if self._show_bounding_box:
-                corners = np.array(
-                    [[tr[0], tr[1]], [tr[2], tr[1]], [tr[2], tr[3]], [tr[0], tr[3]]]
-                )
+                corners = np.array([[tr[0], tr[1]], [tr[2], tr[1]], [tr[2], tr[3]], [tr[0], tr[3]]])
 
-                for i in range(0, 3):
-                    cv2.line(
-                        image,
-                        (int(corners[i, 1]), int(corners[i, 0])),
-                        (int(corners[i + 1, 1]), int(corners[i + 1, 0])),
-                        (255, 255, 255),
-                        1,
-                    )
-                cv2.line(
-                    image,
-                    (int(corners[3, 1]), int(corners[3, 0])),
-                    (int(corners[0, 1]), int(corners[0, 0])),
-                    (255, 255, 255),
-                    1,
-                )
+                for i in range(0,3):
+                    cv2.line(image, (int(corners[i,1]),int(corners[i,0])), (int(corners[i+1,1]),int(corners[i+1,0])),  (255,255,255), 1)
+                cv2.line(image, (int(corners[3,1]),int(corners[3,0])), (int(corners[0,1]),int(corners[0,0])),  (255,255,255), 1)
 
         return image
 
     def parametersDirty(self):
-        return (
-            self.parameters != self.applied_parameters
-            or self.applied_detector_parameters != self.detector.parameters
+        return self.parameters != self.applied_parameters or self.applied_detector_parameters != self.detector.parameters \
             or self.applied_detector_parameters != self.detector.applied_parameters
-        )
 
     def getParameterDict(self):
         if self.parameters is not None:
@@ -338,11 +268,7 @@ class Tracker(QtCore.QObject):
             return None
 
     def getAllParameters(self) -> AllTrackerParameters:
-        return AllTrackerParameters(
-            self.parameters.copy(),
-            self.filter_parameters.copy(),
-            self.secondary_parameters.copy(),
-        )
+        return AllTrackerParameters(self.parameters.copy(), self.filter_parameters.copy(), self.secondary_parameters.copy())
 
     def setPrimaryParameter(self, key, value):
         self.parameters.setKeyValuePair(key, value)
@@ -357,8 +283,8 @@ class Tracker(QtCore.QObject):
         self.setParameters(
             all_params.primary.copy(),
             all_params.filter.copy(),
-            all_params.secondary.copy(),
-        )
+            all_params.secondary.copy()
+            )
 
     def setAllParametersFromDict(self, all_params_dict: dict):
         all_params = self.getAllParameters()
@@ -380,29 +306,23 @@ class AllTrackerParameters(QtCore.QObject):
     def __eq__(self, other):
         if not isinstance(other, AllTrackerParameters):
             return False
-        return (
-            self.primary == other.primary
-            and self.filter == other.filter
+        return self.primary == other.primary \
+            and self.filter == other.filter \
             and self.secondary == other.secondary
-        )
 
     def copy(self):
-        return AllTrackerParameters(
-            self.primary.copy(), self.filter.copy(), self.secondary.copy()
-        )
+        return AllTrackerParameters(self.primary.copy(), self.filter.copy(), self.secondary.copy())
 
     def getParameterDict(self):
         return {
             "primary_tracking": self.primary.getParameterDict(),
             "filtering": self.filter.getParameterDict(),
-            "secondary_tracking": self.secondary.getParameterDict(),
-        }
+            "secondary_tracking": self.secondary.getParameterDict()
+            }
 
     def setParameterDict(self, dictionary):
         if type(dictionary) != dict:
-            raise TypeError(
-                f"Cannot set values of '{type(self).__name__}' from a '{type(dictionary).__name__}' object."
-            )
+            raise TypeError(f"Cannot set values of '{type(self).__name__}' from a '{type(dictionary).__name__}' object.")
 
         if "primary_tracking" in dictionary:
             self.primary.setParameterDict(dictionary["primary_tracking"])
@@ -414,12 +334,10 @@ class AllTrackerParameters(QtCore.QObject):
 
 if __name__ == "__main__":
     import sys
-
-    from PyQt5 import QtCore, QtWidgets
-
+    from PyQt5 import QtCore, QtGui, QtWidgets
+    from playback_manager import PlaybackManager, TestFigure
     from detector import Detector, DetectorParameters
     from fish_manager import FishManager
-    from playback_manager import PlaybackManager, TestFigure
 
     def test1():
         """
@@ -433,34 +351,26 @@ if __name__ == "__main__":
 
         class DetectionTest:
             def __init__(self):
-                self.center = center = np.random.uniform(5, 95, (1, 2))
-                self.diff = diff = np.random.uniform(1, 5, 2)
-                self.corners = np.array(
-                    [
-                        center + [-diff[0], -diff[1]],
-                        center + [diff[0], -diff[1]],
-                        center + [diff[0], diff[1]],
-                        center + [-diff[0], diff[1]],
-                        center + [-diff[0], -diff[1]],
-                    ]
-                )
+                self.center = center = np.random.uniform(5, 95, (1,2))
+                self.diff = diff = np.random.uniform(1,5,2)
+                self.corners = np.array([center+[-diff[0],-diff[1]], \
+                    center+[diff[0],-diff[1]], \
+				    center+[diff[0],diff[1]], \
+				    center+[-diff[0],diff[1]], \
+				    center+[-diff[0],-diff[1]]])
 
             def __repr__(self):
                 return "DT"
 
         detector = DetectorTest()
         tracker = Tracker(detector)
-        detection_frames = [
-            [DetectionTest() for j in range(int(np.random.uniform(0, 5)))]
-            for i in range(50)
-        ]
+        detection_frames = [[DetectionTest() for j in range(int(np.random.uniform(0,5)))] for i in range(50)]
         tracker.trackDetections(detection_frames)
 
     def playbackTest(secondary):
         """
         Test code to assure tracker works with detector.
         """
-
         def forwardImage(tuple):
             ind, frame = tuple
             detections = detector.getDetection(ind)
@@ -506,5 +416,5 @@ if __name__ == "__main__":
         main_window.show()
         sys.exit(app.exec_())
 
-    # test1()
+    #test1()
     playbackTest(True)
