@@ -27,7 +27,7 @@ source .venv/bin/activate
 Then, install the required packages with:
 
 ```bash
-uv pip install -r pyproject.toml
+uv sync
 ```
 
 Finally, run the application with:
