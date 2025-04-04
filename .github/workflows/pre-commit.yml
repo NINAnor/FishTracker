@@ -18,16 +18,20 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Install LLVM
+      - name: Install LLVM 14
         run: |
           sudo apt-get update
-          sudo apt-get install -y llvm-dev llvm
+          sudo apt-get install -y llvm-14 llvm-14-dev
+          sudo ln -sf /usr/bin/llvm-config-14 /usr/local/bin/llvm-config
+          export LLVM_CONFIG=/usr/local/bin/llvm-config
 
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v5
 
       - name: Install dependencies with uv
-        run: uv sync
+        run: |
+          export LLVM_CONFIG=/usr/local/bin/llvm-config
+          uv sync
 
       - name: Run pre-commit
         uses: tox-dev/action-pre-commit-uv@v1
