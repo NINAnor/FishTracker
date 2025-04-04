@@ -21,8 +21,10 @@ jobs:
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v5
 
-      - name: Install dependencies
-        run: uv sync
+      - name: Install dependencies with uv
+        run: |
+          uv python install 3.11
+          uv sync
 
       - name: Run pre-commit
         uses: tox-dev/action-pre-commit-uv@v1
