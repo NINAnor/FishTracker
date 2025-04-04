@@ -95,7 +95,9 @@ class EchoFigure(ZoomableQLabel):
             painter.setPen(QtCore.Qt.white)
             painter.setBrush(QtCore.Qt.white)
             painter.setOpacity(0.3)
-            painter.drawRect(h_pos_0, 0, h_pos_1-h_pos_0, self.window_height)
+            painter.drawRect(
+                int(h_pos_0), 0, int(h_pos_1 - h_pos_0), int(self.window_height)
+            )
 
         if self.draw_selection_box:
             self.paintSelection()
