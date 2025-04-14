@@ -163,7 +163,8 @@ class DetectorParametersView(QWidget):
             layout.addRow(label, line)
             return line
 
-        refresh_lambda = lambda x: playback_manager.refreshFrame()
+        def refresh_lambda(x):
+            return playback_manager.refreshFrame()
 
         self.init_label = QLabel(self)
         self.init_label.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
@@ -175,9 +176,10 @@ class DetectorParametersView(QWidget):
         # BG subtraction parameters
         bg_sub = detector.bg_subtractor
         bg_sub_data = bg_sub.mog_parameters.data
-        lambda_mog = lambda x: bg_sub.setParameter(
-            MOGParameters.ParametersEnum.mog_var_thresh, x
-        )
+
+        def lambda_mog(x):
+            return bg_sub.setParameter(MOGParameters.ParametersEnum.mog_var_thresh, x)
+
         self.mog_var_threshold_line = addLine(
             "MOG var threshold",
             bg_sub_data.mog_var_thresh,
@@ -186,9 +188,9 @@ class DetectorParametersView(QWidget):
             self.form_layout2,
         )
 
-        lambda_bg_frames = lambda x: bg_sub.setParameter(
-            MOGParameters.ParametersEnum.nof_bg_frames, x
-        )
+        def lambda_bg_frames(x):
+            return bg_sub.setParameter(MOGParameters.ParametersEnum.nof_bg_frames, x)
+
         self.nof_bg_frames_line = addLine(
             "Background frames",
             bg_sub_data.nof_bg_frames,
@@ -197,9 +199,9 @@ class DetectorParametersView(QWidget):
             self.form_layout2,
         )
 
-        lambda_learning_rate = lambda x: bg_sub.setParameter(
-            MOGParameters.ParametersEnum.learning_rate, x
-        )
+        def lambda_learning_rate(x):
+            return bg_sub.setParameter(MOGParameters.ParametersEnum.learning_rate, x)
+
         lr_validator = FloatValidator(bottom=0.0, top=1.0, decimals=3)
         lr_validator.setNotation(QDoubleValidator.StandardNotation)
         self.learning_rate_line = addLine(
@@ -252,9 +254,12 @@ class DetectorParametersView(QWidget):
 
         # Detector parameters
         det_param_data = detector.parameters.data
-        lambda_detection_size = lambda x: detector.setParameter(
-            DetectorParameters.ParametersEnum.detection_size, x
-        )
+
+        def lambda_detection_size(x):
+            return detector.setParameter(
+                DetectorParameters.ParametersEnum.detection_size, x
+            )
+
         self.detection_size_line = addLine(
             "Detection size",
             det_param_data.detection_size,
@@ -263,9 +268,11 @@ class DetectorParametersView(QWidget):
             self.form_layout,
         )
 
-        lambda_min_fg_pixels = lambda x: detector.setParameter(
-            DetectorParameters.ParametersEnum.min_fg_pixels, x
-        )
+        def lambda_min_fg_pixels(x):
+            return detector.setParameter(
+                DetectorParameters.ParametersEnum.min_fg_pixels, x
+            )
+
         self.min_fg_pixels_line = addLine(
             "Min foreground pixels",
             det_param_data.min_fg_pixels,
@@ -274,9 +281,11 @@ class DetectorParametersView(QWidget):
             self.form_layout,
         )
 
-        lambda_median_size = lambda x: detector.setParameter(
-            DetectorParameters.ParametersEnum.median_size, x
-        )
+        def lambda_median_size(x):
+            return detector.setParameter(
+                DetectorParameters.ParametersEnum.median_size, x
+            )
+
         self.median_size_slider = LabeledSlider(
             "Median size",
             self.form_layout,
@@ -290,9 +299,11 @@ class DetectorParametersView(QWidget):
         )
         self.median_size_slider.setValue(det_param_data.median_size)
 
-        lambda_dbscan_eps = lambda x: detector.setParameter(
-            DetectorParameters.ParametersEnum.dbscan_eps, x
-        )
+        def lambda_dbscan_eps(x):
+            return detector.setParameter(
+                DetectorParameters.ParametersEnum.dbscan_eps, x
+            )
+
         self.dbscan_eps_line = addLine(
             "Clustering epsilon",
             det_param_data.dbscan_eps,
@@ -301,9 +312,11 @@ class DetectorParametersView(QWidget):
             self.form_layout,
         )
 
-        lambda_dbscan_min_samples = lambda x: detector.setParameter(
-            DetectorParameters.ParametersEnum.dbscan_min_samples, x
-        )
+        def lambda_dbscan_min_samples(x):
+            return detector.setParameter(
+                DetectorParameters.ParametersEnum.dbscan_min_samples, x
+            )
+
         self.dbscan_min_samples_line = addLine(
             "Clustering min samples",
             det_param_data.dbscan_min_samples,

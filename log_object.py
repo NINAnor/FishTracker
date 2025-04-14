@@ -114,8 +114,12 @@ class LogObject(metaclass=Singleton):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    f1 = lambda x: print("*** ", x, " ***")
-    f2 = lambda x: print("--- ", x, " ---")
+
+    def f1(x):
+        return print("*** ", x, " ***")
+
+    def f2(x):
+        return print("--- ", x, " ---")
 
     LogObject().connect(f1)
     LogObject().connect(f2)

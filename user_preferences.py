@@ -30,7 +30,10 @@ from playback_manager import PlaybackManager
 
 def setupSlider(label, tooltip, layout, key, min_v, max_v):
     val = fh.getConfValue(key)
-    fun = lambda x: fh.setConfValue(key, x)
+
+    def fun(x):
+        return fh.setConfValue(key, x)
+
     qlabel = QtWidgets.QLabel(label)
     qlabel.setToolTip(tooltip)
     slider = LabeledSlider(qlabel, layout, [fun], val, min_v, max_v)
@@ -86,7 +89,10 @@ class UserPreferencesDialog(QtWidgets.QDialog):
 
         # "sonar_height": 1000,
         val = fh.getConfValue(fh.ConfKeys.sonar_height)
-        fun = lambda x: fh.setConfValue(fh.ConfKeys.sonar_height, x)
+
+        def fun(x):
+            return fh.setConfValue(fh.ConfKeys.sonar_height, x)
+
         sh_tooltip = (
             "Determines the image height used in the SonarViewer. "
             "This affects the speed of the analysis and the obtained results."

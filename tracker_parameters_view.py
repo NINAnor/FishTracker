@@ -135,7 +135,10 @@ class TrackerParametersView(QScrollArea):
 
         def setParameterSliderP(label, min_value, max_value, parameter_enum):
             value = self.tracker.parameters.getParameter(parameter_enum)
-            lambda_param = lambda x: self.tracker.setPrimaryParameter(parameter_enum, x)
+
+            def lambda_param(x):
+                return self.tracker.setPrimaryParameter(parameter_enum, x)
+
             return LabeledSlider(
                 label,
                 self.form_layout_p,
@@ -166,9 +169,12 @@ class TrackerParametersView(QScrollArea):
         )
         self.trim_tails_checkbox_p = QCheckBox("", self)
         self.trim_tails_checkbox_p.setChecked(trim_tails_value_p)
-        lambda_trim_tails_p = lambda x: self.tracker.setPrimaryParameter(
-            TrackerParameters.ParametersEnum.trim_tails, x
-        )
+
+        def lambda_trim_tails_p(x):
+            return self.tracker.setPrimaryParameter(
+                TrackerParameters.ParametersEnum.trim_tails, x
+            )
+
         self.trim_tails_checkbox_p.stateChanged.connect(lambda_trim_tails_p)
         self.form_layout_p.addRow("Trim tails", self.trim_tails_checkbox_p)
 
@@ -206,7 +212,10 @@ class TrackerParametersView(QScrollArea):
 
         def setParameterSliderF(label, min_value, max_value, parameter_enum):
             value = self.tracker.filter_parameters.getParameter(parameter_enum)
-            lambda_param = lambda x: self.tracker.setFilterParameter(parameter_enum, x)
+
+            def lambda_param(x):
+                return self.tracker.setFilterParameter(parameter_enum, x)
+
             return LabeledSlider(
                 label,
                 self.form_layout_f,
@@ -232,9 +241,10 @@ class TrackerParametersView(QScrollArea):
 
         def setParameterSliderS(label, min_value, max_value, parameter_enum):
             value = self.tracker.secondary_parameters.getParameter(parameter_enum)
-            lambda_param = lambda x: self.tracker.setSecondaryParameter(
-                parameter_enum, x
-            )
+
+            def lambda_param(x):
+                return self.tracker.setSecondaryParameter(parameter_enum, x)
+
             return LabeledSlider(
                 label,
                 self.form_layout_s,
@@ -265,9 +275,12 @@ class TrackerParametersView(QScrollArea):
         )
         self.trim_tails_checkbox_s = QCheckBox("", self)
         self.trim_tails_checkbox_s.setChecked(trim_tails_value_s)
-        lambda_trim_tails_s = lambda x: self.tracker.setSecondaryParameter(
-            TrackerParameters.ParametersEnum.trim_tails, x
-        )
+
+        def lambda_trim_tails_s(x):
+            return self.tracker.setSecondaryParameter(
+                TrackerParameters.ParametersEnum.trim_tails, x
+            )
+
         self.trim_tails_checkbox_s.stateChanged.connect(lambda_trim_tails_s)
         self.form_layout_s.addRow("Trim tails", self.trim_tails_checkbox_s)
 
