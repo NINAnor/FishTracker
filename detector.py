@@ -49,7 +49,8 @@ class Detector(QtCore.QObject):
     # When detector state changes.
     state_changed_signal = QtCore.pyqtSignal()
 
-    # When displayed results change (e.g. when a new frame is displayed). Parameter: number of detections displayed.
+    # When displayed results change (e.g. when a new frame is displayed).
+    # Parameter: number of detections displayed.
     data_changed_signal = QtCore.pyqtSignal(int)
 
     # When detector has computed all available frames.
@@ -97,7 +98,7 @@ class Detector(QtCore.QObject):
             )
 
         # self.bg_subtractor.setParameters(parameters.mog_parameters)
-        self.parameters = parameters  # DetectorParameters(mog_parameters=self.bg_subtractor.mog_parameters)
+        self.parameters = parameters
         self.parameters.values_changed_signal.connect(self.parameters_changed_signal)
         self.parameters_changed_signal.emit()
 
@@ -381,7 +382,9 @@ class Detector(QtCore.QObject):
         try:
             with open(path, "w") as file:
                 file.write(
-                    "frame;length;distance;angle;corner1 x;corner1 y;corner2 x;corner2 y;corner3 x;corner3 y;corner4 x;corner4 y\n"
+                    "frame;length;distance;angle;"
+                    "corner1 x;corner1 y;corner2 x;corner2 y;"
+                    "corner3 x;corner3 y;corner4 x;corner4 y\n"
                 )
                 for frame, dets in enumerate(self.detections):
                     if dets is not None:
@@ -441,14 +444,16 @@ class Detector(QtCore.QObject):
                 self.compute_on_event = False
                 if ignored_dets > 0:
                     LogObject().print(
-                        f"Encountered {ignored_dets} detections that were out of range {nof_frames}."
+                        f"Encountered {ignored_dets} detections that were out of range "
+                        f"{nof_frames}."
                     )
 
         except PermissionError:
             LogObject().print(f"Cannot open file {path}. Permission denied.")
         except ValueError as e:
             LogObject().print(
-                f"Invalid values encountered in {path}, when trying to import detections. {e}"
+                f"Invalid values encountered in {path}, "
+                f"when trying to import detections. {e}"
             )
 
     def getSaveDictionary(self):
@@ -521,8 +526,9 @@ class Detection:
 
     def init_from_data(self, data, detection_size, polar_transform):
         """
-        Initialize detection parameters from the pixel data from the clusterer / detection algorithm. Saved pixel data
-        can also be used to (re)initialize the detection.
+        Initialize detection parameters from the pixel data from the clusterer or
+        detection algorithm. Saved pixel data can also be used to (re)initialize
+        the detection.
         """
         self.data = np.asarray(data)
 
@@ -539,7 +545,8 @@ class Detection:
 
             center = mina + diff
 
-            # Get the 4 corners by subtracting and adding half the bounding boxes height and width to the center
+            # Get the 4 corners by subtracting and adding half the bounding boxes height
+            # and width to the center
             corners = np.array(
                 [
                     center + [-diff[0], -diff[1]],
@@ -552,7 +559,8 @@ class Detection:
 
             self.diff = diff
 
-            # Use the the eigenvectors as a rotation matrix and rotate the corners and the center back
+            # Use the the eigenvectors as a rotation matrix and rotate the corners and
+            # the center back
             self.corners = np.dot(corners, tvect)
             self.center = np.dot(center, tvect)
 
@@ -567,8 +575,9 @@ class Detection:
 
     def init_from_file(self, corners, length, distance, angle):
         """
-        Initialize detection parameters from a csv file. Data is not stored when exporting a csv file,
-        which means it cannot be recovered here. This mainly affects the visualization of the detection.
+        Initialize detection parameters from a csv file. Data is not stored when
+        exporting a csv file, which means it cannot be recovered here.
+        This mainly affects the visualization of the detection.
         """
         self.corners = np.array(corners)
         self.center = np.average(self.corners, axis=0)
@@ -636,7 +645,8 @@ class Detection:
         return "Size: " + str(int(100 * self.length))
 
     def getMessage(self):
-        # This message was used to send data to tracker process (C++) or save detections to file
+        # This message was used to send data to tracker process (C++) or save detections
+        # to file
         if self.diff is None:
             return ""
 

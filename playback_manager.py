@@ -49,7 +49,8 @@ class PlaybackManager(QObject):
     mapping_done = pyqtSignal()
     # Signals that all polar frames are loaded.
     polars_loaded = pyqtSignal()
-    # Called before frame_available. This is done in the main thread for every frame, no heavy calculation here.
+    # Called before frame_available. This is done in the main thread for every frame,
+    # no heavy calculation here.
     frame_available_immediate = Event()
     # Signal that passes the current frame (cartesian) to all connected functions.
     frame_available = pyqtSignal(tuple)
@@ -148,7 +149,9 @@ class PlaybackManager(QObject):
 
         if self.playback_thread:
             # LogObject().print("Stopping existing thread.")
-            # self.playback_thread.signals.playback_ended_signal.connect(self.setLoadedFile)
+            # self.playback_thread.signals.playback_ended_signal.connect(
+            #     self.setLoadedFile
+            # )
             self.closeFile()
             self.setLoadedFile(sonar)
         else:
@@ -486,7 +489,8 @@ class PlaybackThread(QRunnable):
     It keeps track of the currently displayed frame and makes sure that new frames
     are processed before / when they are needed.
 
-    Pausing does not stop this thread, since it is necessary for smoother interaction with UI.
+    Pausing does not stop this thread, since it is necessary for smoother interaction
+    with UI.
     """
 
     def __init__(self, path, sonar, thread_pool):

@@ -31,7 +31,7 @@ class Tracker:
 
     Attributes:
         max_age: Max number of frames that a tracks survives without new measurements.
-        min_hits: Min number of consecutive measurements needed for initiating new track.
+        min_hits: Min number of consecutive measurements needed for initiating new track
         search_radius: Euclidean gating threshold for data association.
     """
 

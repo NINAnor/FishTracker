@@ -547,8 +547,11 @@ def BeamLookUp(BeamCount, largeLens, beam_angle=False):
 
 
 def beamAngle(beam_num, BeamCount):
-    """Returns the beam angle of the requested beam.  This may not be the true beam center,
-    due to non-centric beams but it is close"""
+    """
+    Returns the beam angle of the requested beam.
+    This may not be the true beam center,
+    due to non-centric beams but it is close
+    """
 
     if BeamCount == 128:
         breakpoints = breakpoints128

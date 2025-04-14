@@ -106,7 +106,10 @@ class BatchDialog(QtWidgets.QDialog):
         # Number of parallel processes
         self.parallel_layout = QtWidgets.QHBoxLayout()
 
-        parallel_tooltip = "Defines the number of files that are processed simultaneosly / in parallel."
+        parallel_tooltip = (
+            "Defines the number of files that are processed "
+            "simultaneously / in parallel."
+        )
         self.label_p = QtWidgets.QLabel("Parallel:")
         self.label_p.setToolTip(parallel_tooltip)
         self.parallel_layout.addWidget(self.label_p)
@@ -346,9 +349,15 @@ class BatchDialog(QtWidgets.QDialog):
         else:
             process_ids = [id + 1 for id in self.batch_track.active_processes]
             if len(process_ids) > 1:
-                text = f"Status: Processing files {process_ids} / {self.batch_track.total_processes}"
+                text = (
+                    f"Status: Processing files {process_ids} / "
+                    f"{self.batch_track.total_processes}"
+                )
             elif len(process_ids) == 1:
-                text = f"Status: Processing file {process_ids[0]} / {self.batch_track.total_processes}"
+                text = (
+                    f"Status: Processing file {process_ids[0]} / "
+                    f"{self.batch_track.total_processes}"
+                )
             else:
                 text = "Status: No active files to process"
 

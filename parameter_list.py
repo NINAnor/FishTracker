@@ -138,7 +138,8 @@ class ParameterList(QtWidgets.QToolBar):
             self.measure_btn.clicked.connect(self.sonar_viewer.measureDistance)
             self.sonar_viewer.sonar_figure.measure_toggle.append(self.toggleMeasureBtn)
         self.measure_btn.setToolTip(
-            "Measure distance\nDraw a line in Sonar View to measure a distance between two points"
+            "Measure distance\n"
+            "Draw a line in Sonar View to measure a distance between two points"
         )
 
         # SonarView colormap

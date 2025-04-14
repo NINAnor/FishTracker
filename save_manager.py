@@ -74,11 +74,15 @@ File format as follows:
     "detections":
     {
         frame_1: [[detection_label_0, [[x,y], [x,y], [x,y], [x,y]]]],
-        frame_2: [[detection_label_1, [[x,y], [x,y]]], [detection_label_2, [[x,y], [x,y], [x,y]]]]
+        frame_2:
+            [[detection_label_1, [[x,y], [x,y]]],
+            [detection_label_2, [[x,y], [x,y], [x,y]]]]
     },
     "fish":
     {
-        track_id_1: [[frame_1, detection_label_0, [min_x, max_x, min_y, max_y]], [frame_2, detection_label_1, [min_x, max_x, min_y, max_y]]],
+        track_id_1:
+            [[frame_1, detection_label_0,[min_x, max_x, min_y, max_y]],
+            [frame_2, detection_label_1, [min_x, max_x, min_y, max_y]]],
         track_id_2: [[frame_2, detection_label_2, [min_x, max_x, min_y, max_y]]]
     }
 }
@@ -111,7 +115,8 @@ class SaveManager(QtCore.QObject):
 
     def saveFile(self, path: str, binary: bool):
         """
-        Saves the contents of detector and tracker and the corresponding parameters to file.
+        Saves the contents of detector and tracker and the corresponding
+        parameters to file.
         """
 
         LogObject().print1(f"Saving data to '{path}'")
