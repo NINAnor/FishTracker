@@ -323,7 +323,8 @@ class DetectorParametersView(QWidget):
         self.calculate_all_btn.setObjectName("calculateAllButton")
         self.calculate_all_btn.setText("Calculate All")
         self.calculate_all_btn.setToolTip(
-            "Start a process that initializes the detector and detects fish in all the frames"
+            "Start a process that initializes the detector and "
+            "detects fish in all the frames"
         )
         self.calculate_all_btn.clicked.connect(self.calculateAll)
         self.calculate_all_btn.setMinimumWidth(150)

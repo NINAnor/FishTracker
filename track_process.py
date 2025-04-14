@@ -179,7 +179,9 @@ class TrackProcess(QtCore.QObject):
             self.detector.parameters = params_detector
 
         if params_tracker_dict is not None:
-            # params_tracker = AllTrackerParameters(TrackerParameters(), FilterParameters(), TrackerParameters())
+            # params_tracker = AllTrackerParameters(
+            #     TrackerParameters(), FilterParameters(), TrackerParameters()
+            # )
             # params_tracker.setParameterDict(params_tracker_dict)
             # self.tracker.setAllParameters(params_tracker)
             self.tracker.setAllParametersFromDict(params_tracker_dict)
@@ -254,8 +256,8 @@ class TrackProcess(QtCore.QObject):
 
     def listenConnection(self):
         """
-        Listens the connection for messages. Currently, only terminate message (-1) is supported,
-        but others should be easy to add when needed.
+        Listens the connection for messages. Currently, only terminate message (-1) is
+        supported, but others should be easy to add when needed.
         """
         while self.alive:
             if self.connection.poll():
@@ -268,7 +270,8 @@ class TrackProcess(QtCore.QObject):
 
     def getSaveFilePath(self, end_string):
         """
-        Formats the save file path. Detections and tracks are separated based on end_string.
+        Formats the save file path. Detections and tracks are separated based on
+        end_string.
         """
         base_name = os.path.basename(self.file)
         file_name = os.path.splitext(base_name)[0]

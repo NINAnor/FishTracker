@@ -26,7 +26,8 @@ from playback_manager import Event
 class ZoomableQLabel(QtWidgets.QLabel):
     """
     Base class that enables zooming and panning of the assigned image.
-    Horizontal zoomig, vertical zooming and preserving aspect ratio can be enabled/disabled individually.
+    Horizontal zoomig, vertical zooming and preserving aspect ratio can be enabled or
+    disabled individually.
 
     BUG: If maintain_aspect_ratio is enabled and either of zooming options is disabled,
          the image is shown only partially when zoomed in. This combination of options
@@ -81,8 +82,8 @@ class ZoomableQLabel(QtWidgets.QLabel):
 
     def minMaxMousePositions(self, m_pos1, m_pos2):
         """
-        Coverts two mouse positions in image coordinates into a rectangle (min and max corners)
-        in view coordinates.
+        Coverts two mouse positions in image coordinates into a rectangle
+        (min and max corners) in view coordinates.
         """
         x1, y1 = self.getMousePositionOnView(m_pos1)
         x2, y2 = self.getMousePositionOnView(m_pos2)
@@ -378,8 +379,10 @@ class ZoomableQLabel(QtWidgets.QLabel):
         super().clear()
         self.displayed_image = None
 
-    # Transform functions to transform coordinates from one system to other are defined below.
-    # Implemented transform are for positon and direction between image and viewport coordinates.
+    # Transform functions to transform coordinates from one system to other are defined
+    # below.
+    # Implemented transform are for positon and direction between image and viewport
+    # coordinates.
 
     def view2imageX(self, value):
         if self.pixmap() is not None:

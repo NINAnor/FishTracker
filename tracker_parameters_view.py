@@ -58,7 +58,9 @@ class TrackerParametersView(QScrollArea):
         detector_active = (
             self.detector.bg_subtractor.initializing or self.detector.computing
         )
-        # all_value = self.tracker.parametersDirty() and self.playback_manager.isPolarsDone()
+        # all_value = (
+        #     self.tracker.parametersDirty() and self.playback_manager.isPolarsDone()
+        # )
         self.primary_track_btn.setEnabled(
             self.playback_manager.isPolarsDone()
             and (self.tracker.tracking_state != TrackingState.SECONDARY)
@@ -92,8 +94,8 @@ class TrackerParametersView(QScrollArea):
 
     def secondaryTrack(self):
         """
-        Either starts the second (or any subsequent) tracking iteration, or cancels the process
-        if one is already started. A FishManager is required for this action.
+        Either starts the second (or any subsequent) tracking iteration, or cancels the
+        process if one is already started. A FishManager is required for this action.
         """
 
         if self.fish_manager is None:

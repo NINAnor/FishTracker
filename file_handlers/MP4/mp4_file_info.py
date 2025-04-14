@@ -55,14 +55,19 @@ def mp4_getAllFramesData(fhand, version, cls):
     ### Values not used ###
 
     # cls.BEAM_COUNT = 135 # Number of beams
-    cls.samplesPerBeam = 2267  # Number of downrange samples in each beam. Used for counting windowLength. For MP4, beam count 135 = 2267
-    cls.samplePeriod = 30  # Downrange sample rate. Used for counting windowLength. Values 4 - 100 microseconds. No idea of value for MP4. In MP4 can change during emitting,
+    cls.samplesPerBeam = 2267  # Number of downrange samples in each beam.
+    # Used for counting windowLength. For MP4, beam count 135 = 2267
+    cls.samplePeriod = 30  # Downrange sample rate. Used for counting windowLength.
+    # Values 4 - 100 microseconds. No idea of value for MP4. In MP4 can change during
+    # emitting,
     # if zoom +-
     cls.soundSpeed = (
         1480  # speed of sound. Used for counting windowLength. About 1480 in water
     )
-    cls.sampleStartDelay = 0  # DIDSON-files related, delay till sonar starts emitting. AFAIK 0 for all MP4 files. Used for counting WindowStart
+    # DIDSON-files related, delay till sonar starts emitting.AFAIK 0 for all MP4 files.
+    # Used for counting WindowStart
 
+    cls.sampleStartDelay = 0
     ### Values not used ###
 
     dialog = InputDialog()
@@ -105,9 +110,10 @@ def mp4_getAllFramesData(fhand, version, cls):
         ret, frame = vid_capture.read()
 
         if ret == True:
-            gray = cv2.cvtColor(
-                frame, cv2.COLOR_BGR2GRAY
-            )  # BGR2BGRA for alpha layer # BGR2GRAY to erase z-dimension/colors (n, n, n) => (n, n)
+            # BGR2BGRA for alpha layer # BGR2GRAY to erase z-dimension/colors
+            # (n, n, n) => (n, n)
+
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     # Release the video capture object
     # Destroyig windows is not necessary as we don't open any windows
@@ -135,38 +141,9 @@ def mp4_getAllFramesData(fhand, version, cls):
 
         cls.FRAMES = np.array(dst, dtype=np.uint8)
 
-        """
         # Replace to make excess transparent and reshape to grid dimensions (2267, 135)
         # Loses pixels and possibly falsifies data
         # gray needs to changed to BGR2BGRA as well
-        pts = np.array([[0,0], [768,0], [768,318], [384,475], [0,318]]) #768,480   475, 318
-        rect = cv2.boundingRect(pts)
-        x,y,w,h = rect
-        cropped = gray[y:y+h, x:x+w].copy()
-
-        pts = pts - pts.min(axis=0)
-        mask = np.zeros(cropped.shape[:2], np.uint8)
-        cv2.drawContours(mask, [pts], -1, (255,255,255), -1, cv2.LINE_AA)
-
-        dst = cv2.bitwise_and(cropped, cropped, mask=mask)
-
-        dst[mask == 0] = 0
-
-        cls.FRAMES = np.array(dst, dtype=np.uint8)
-
-
-        whiteUp = np.all(dst[...,:3] == (255, 255, 255), axis=-1)
-
-        dst[whiteUp,3] = 0
-
-        dstGrey = cv2.cvtColor(dst[:,:,0:3], cv2.COLOR_BGRA2GRAY)
-        mask2 = dst[:,:,3]
-
-        maskidx = (mask2 != 0)
-
-        cls.FRAMES = np.array(dstGrey[maskidx], dtype=np.uint8)
-        print(cls.FRAMES.shape) #306045
-        cls.FRAMES = cls.FRAMES.reshape(2267, 135)  #2267, 135"""
 
         cls.DATA_SHAPE = cls.FRAMES.shape
         cls.firstBeamAngle = beamLookUp.BeamLookUp(cls.BEAM_COUNT, cls.largeLens)[-1]

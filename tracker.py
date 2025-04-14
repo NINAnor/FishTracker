@@ -113,7 +113,8 @@ class Tracker(QtCore.QObject):
 
     def primaryTrack(self):
         """
-        Tracks all detections from detector and stores the results in tracks_by_frame dictionary.
+        Tracks all detections from detector and stores the results in tracks_by_frame
+        dictionary.
         Signals when the computation has finished.
         """
 
@@ -131,7 +132,8 @@ class Tracker(QtCore.QObject):
                 return
 
         LogObject().print1(
-            f"Primary tracking. Available detections: {self.detectionCount(self.detector.detections)}"
+            f"Primary tracking. Available detections: "
+            f"{self.detectionCount(self.detector.detections)}"
         )
         self.tracks_by_frame = self.trackDetections(
             self.detector.detections, self.parameters, reset_count=True
@@ -152,7 +154,8 @@ class Tracker(QtCore.QObject):
         Signals when the computation has finished.
 
         used_detections: Dictionary: frame_index -> list of detections in that frame.
-        tracker_parameters: TrackerParameters object containing the parameters for tracking.
+        tracker_parameters: TrackerParameters object containing the parameters for
+        tracking.
         """
 
         self.tracking_state = TrackingState.SECONDARY
@@ -170,7 +173,8 @@ class Tracker(QtCore.QObject):
                 detections[frame] = dets
 
         LogObject().print1(
-            f"Secondary tracking. Available detections: {self.detectionCount(detections)}"
+            f"Secondary tracking. Available detections: "
+            f"{self.detectionCount(detections)}"
         )
         self.tracks_by_frame = self.trackDetections(
             detections, tracker_parameters, reset_count=False
@@ -238,7 +242,8 @@ class Tracker(QtCore.QObject):
     def trackBase(self, mot_tracker, frame, ind):
         """
         Performs tracking step for a single frame.
-        Returns (track, detection) if the track was updated this frame, otherwise (track, None).
+        Returns (track, detection) if the track was updated this frame, otherwise
+        (track, None).
         """
         if frame is None:
             LogObject().print(
@@ -401,7 +406,8 @@ class AllTrackerParameters(QtCore.QObject):
     def setParameterDict(self, dictionary):
         if type(dictionary) != dict:
             raise TypeError(
-                f"Cannot set values of '{type(self).__name__}' from a '{type(dictionary).__name__}' object."
+                f"Cannot set values of '{type(self).__name__}' from a "
+                f"'{type(dictionary).__name__}' object."
             )
 
         if "primary_tracking" in dictionary:

@@ -40,7 +40,9 @@ class FishList(QtWidgets.QWidget):
         self.show_fish = False
 
         # self.scroll = QtWidgets.QScrollArea(self)
-        # self.scroll.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        # self.scroll.setSizePolicy(
+        #     QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+        # )
 
         self.table = QtWidgets.QTableView(self)
         self.table.setSizePolicy(

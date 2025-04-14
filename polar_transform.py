@@ -55,7 +55,9 @@ def pix2metC(y, x, cart_shape, metric_cart_shape):
 
 @njit
 def met2pixC(y, x, cart_shape, metric_cart_shape):
-    """Transforms from cartesian metric coordinates to cartesian pixel coordinates"""
+    """
+    Transforms from cartesian metric coordinates to cartesian pixel coordinates
+    """
     _x = linear(x, 0, metric_cart_shape[1], 0, cart_shape[1] - 1)
     _y = linear(y, 0, metric_cart_shape[0], 0, cart_shape[0] - 1)
     return (_y, _x)
@@ -169,11 +171,16 @@ class PolarTransform:
         return (height, 2 * math.ceil(half_width))
 
     def pix2metC(self, y, x):
-        """Transforms from cartesian pixel coordinates to cartesian metric coordinates"""
+        """
+        Transforms from cartesian pixel coordinates to cartesian metric coordinates
+        """
         return pix2metC(y, x, self.cart_shape, self.metric_cart_shape)
 
     def pix2metCI(self, y, x):
-        """Transforms from cartesian pixel coordinates to cartesian metric coordinates (inverted y-axis)"""
+        """
+        Transforms from cartesian pixel coordinates to cartesian metric coordinates
+        (inverted y-axis)
+        """
         return pix2metC(
             self.cart_shape[0] - y, x, self.cart_shape, self.metric_cart_shape
         )
@@ -184,7 +191,9 @@ class PolarTransform:
         return rho_met, phi_met
 
     def met2pixC(self, y, x):
-        """Transforms from cartesian metric coordinates to cartesian pixel coordinates"""
+        """
+        Transforms from cartesian metric coordinates to cartesian pixel coordinates
+        """
         return met2pixC(y, x, self.cart_shape, self.metric_cart_shape)
 
     def pix2metP(self, rho, phi):
@@ -250,7 +259,8 @@ class PolarTransform:
 
     def getOuterEdge(self, distance, right=True):
         """
-        Function to get the outer edge at a specific distance in cartesian pixel coordinates.
+        Function to get the outer edge at a specific distance in cartesian pixel
+        coordinates.
         Specifically built for SonarFigure to display the depth scale.
         """
         offset = np.array((0, distance if right else -distance))

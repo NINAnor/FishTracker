@@ -50,9 +50,10 @@ class WriteStream:
 
 class StreamReceiver(QObject):
     """
-    A QObject (to be run in a QThread) which sits waiting for data to come through a queue.
-    It blocks until data is available, and once it gets something from the queue, it sends
-    it to the "MainThread" by emitting a Qt Signal
+    A QObject (to be run in a QThread) which sits waiting for data to come through a
+    queue.
+    It blocks until data is available, and once it gets something from the queue, it
+    sends it to the "MainThread" by emitting a Qt Signal
     """
 
     signal = pyqtSignal(str)
@@ -88,8 +89,9 @@ class OutputViewer(QWidget):
 
     def connectToLogObject(self, format=None):
         """
-        Connect text_edit field to LogObject signal. A formatting function, which takes a string as input
-        and returns the modified string, can be provided for custom formatting.
+        Connect text_edit field to LogObject signal. A formatting function, which takes
+        a string as input and returns the modified string, can be provided for custom
+        formatting.
 
         Note: The conf file has an option to include time stamp to the displayed log.
         """
@@ -115,7 +117,8 @@ class OutputViewer(QWidget):
         self.queue = Queue()
         sys.stdout = WriteStream(self.queue)
 
-        # Create thread that will listen on the other end of the queue, and send the text to the textedit in our application
+        # Create thread that will listen on the other end of the queue, and send the
+        # text to the textedit in our application
         self.thread = QThread()
         self.receiver = StreamReceiver(self.queue)
         self.receiver.signal.connect(self.appendText)

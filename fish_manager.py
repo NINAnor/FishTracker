@@ -114,7 +114,8 @@ class FishManager(QtCore.QAbstractTableModel):
 
         self.selected_rows = set()
 
-        # Index for fish_sort_keys array, that contains lambda functions to sort the currently shown array.
+        # Index for fish_sort_keys array, that contains lambda functions to sort the
+        # currently shown array.
         # Default: ID
         self.sort_ind = 1
 
@@ -124,7 +125,8 @@ class FishManager(QtCore.QAbstractTableModel):
         # Min number of detections required for a fish to be included in fish_list
         self.min_detections = 2
 
-        # Major axis distance, i.e. delta angle (degrees) between the first and the last associated detection
+        # Major axis distance, i.e. delta angle (degrees) between the first and the last
+        # associated detection
         self.mad_limit = 0
 
         # Percentile with which the shown length is determined
@@ -172,7 +174,8 @@ class FishManager(QtCore.QAbstractTableModel):
 
     def trimFishList(self, force_color_update=False):
         """
-        Updates shown table (fish_list) from all instances containing dictionary (all_fish).
+        Updates shown table (fish_list) from all instances containing dictionary
+        (all_fish).
         fish_list is trimmed based on the minimum duration.
         """
 
@@ -469,7 +472,9 @@ class FishManager(QtCore.QAbstractTableModel):
 
     def secondaryTrack(self, filter_parameters):
         """
-        Applies filters to fish data and starts tracker's secondaryTrack process with used detections.
+        Applies filters to fish data and starts tracker's secondaryTrack process with
+        used detections.
+
         Used detections are excluded from tracking.
         """
         self.clear_old_data = False
@@ -563,7 +568,8 @@ class FishManager(QtCore.QAbstractTableModel):
     def applyFiltersAndGetUsedDetections(self, min_detections=None, mad_limit=None):
         """
         Applies filters and returns the detections associated to the remaining fish.
-        If optional parameters are not given, the current values in FishManager are used.
+        If optional parameters are not given, the current values in FishManager are
+        used.
         """
         temp_min_detections = self.min_detections
         temp_mad_limit = self.mad_limit
@@ -728,7 +734,9 @@ class FishManager(QtCore.QAbstractTableModel):
         try:
             with open(path, "w") as file:
                 file.write(
-                    "id;frame;length;distance;angle;direction;corner1 x;corner1 y;corner2 x;corner2 y;corner3 x;corner3 y;corner4 x;corner4 y; detection\n"
+                    "id;frame;length;distance;angle;direction;"
+                    "corner1 x;corner1 y;corner2 x;corner2 y;"
+                    "corner3 x;corner3 y;corner4 x;corner4 y; detection\n"
                 )
 
                 lines = self.getSaveLines()
@@ -742,8 +750,12 @@ class FishManager(QtCore.QAbstractTableModel):
 
     def getSaveLines(self):
         """
-        Iterates through all the fish and returns a list containing the fish objects, frames the fish appear in, and the following information:
-        ID, Frame, Length, Angle, Direction, Corner coordinates and wether the values are from a detection or a track.
+        Iterates through all the fish and returns a list containing the fish objects,
+        frames the fish appear in, and the following information:
+
+        ID, Frame, Length, Angle, Direction, Corner coordinates and wether the values
+        are from a detection or a track.
+
         Detection information are preferred over tracks.
         """
         lines = []
@@ -849,7 +861,8 @@ class FishManager(QtCore.QAbstractTableModel):
             LogObject().print(f"Cannot open file {path}. Permission denied.")
         except ValueError as e:
             LogObject().print(
-                f"Invalid values encountered in {path}, when trying to import tracks. {e}"
+                f"Invalid values encountered in {path}, "
+                f"when trying to import tracks. {e}"
             )
 
     def convertToWritable(self, frame, label, track):
@@ -901,7 +914,8 @@ class FishManager(QtCore.QAbstractTableModel):
 
                     if not match_found:
                         LogObject().print(
-                            f"Warning: Match not found in frame {frame} for label {det_label}"
+                            f"Warning: Match not found in frame {frame} "
+                            f"for label {det_label}"
                         )
                 else:
                     f.addTrack(track, None, frame)
@@ -1029,7 +1043,8 @@ class FishEntry:
 
     def trimTail(self):
         """
-        Removes the tail of the tracks, i.e. the last tracks with no corresponding detections (det == None).
+        Removes the tail of the tracks, i.e. the last tracks with no corresponding
+        detections (det == None).
         """
         for frame in self.getTail():
             self.tracks.pop(frame)

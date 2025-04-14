@@ -87,7 +87,10 @@ class UserPreferencesDialog(QtWidgets.QDialog):
         # "sonar_height": 1000,
         val = fh.getConfValue(fh.ConfKeys.sonar_height)
         fun = lambda x: fh.setConfValue(fh.ConfKeys.sonar_height, x)
-        sh_tooltip = "Determines the image height used in the SonarViewer. This affects the speed of the analysis and the obtained results."
+        sh_tooltip = (
+            "Determines the image height used in the SonarViewer. "
+            "This affects the speed of the analysis and the obtained results."
+        )
         self.sonar_height_line = addLine(
             "Sonar image height\t\t",
             sh_tooltip,
@@ -108,7 +111,10 @@ class UserPreferencesDialog(QtWidgets.QDialog):
         # "filter_tracks_on_save": true
         self.check_filter_tracks = setupCheckbox(
             "Apply filters",
-            "If checked, applies filters before saving tracks, i.e. only currently visible tracks are saved.",
+            (
+                "If checked, applies filters before saving tracks, "
+                "i.e. only currently visible tracks are saved."
+            ),
             self.form_layout,
             fh.ConfKeys.filter_tracks_on_save,
         )

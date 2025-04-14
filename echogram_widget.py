@@ -164,12 +164,14 @@ class EchoFigure(ZoomableQLabel):
 
     def updateOverlayedImage(self, vertical_detections, vertical_tracks):
         """
-        Precalculates an image (QPixmap) containing the detection lines of each detection.
+        Precalculates an image (QPixmap) containing the detection lines of each
+        detection.
         The calculated image can then be used repeatedly to overlay the detections to
         the echogram view.
 
-        The image is calculated based on the current position and zoom level of the echogram view,
-        meaning any detections outside the current view will not be included.
+        The image is calculated based on the current position and zoom level of the
+        echogram view, meaning any detections outside the current view will not be
+        included.
         """
         self.detection_pixmap = QtGui.QPixmap(self.window_width, self.window_height)
         self.detection_pixmap.fill(QtGui.QColor(0, 0, 0, 0))
@@ -264,7 +266,8 @@ class EchogramViewer(QtWidgets.QWidget):
     def __init__(self, playback_manager, detector, fish_manager):
         super().__init__()
 
-        # Contains vertical position of each fish in each frame, as well as the associated
+        # Contains vertical position of each fish in each frame, as well as the
+        # associated
         # color index and a bool indicating  whether the fish is selected or not.
         self.vertical_tracks = []
 
@@ -368,8 +371,8 @@ class EchogramViewer(QtWidgets.QWidget):
 
     def getScaleLinearModel(self, height):
         """
-        Returns parameters to a linear model, which can be used to convert metric distances
-        into vertical position on the displayed image.
+        Returns parameters to a linear model, which can be used to convert metric
+        distances into vertical position on the displayed image.
         """
         if self.playback_manager.isMappingDone():
             min_d, max_d = self.playback_manager.getRadiusLimits()
@@ -381,8 +384,8 @@ class EchogramViewer(QtWidgets.QWidget):
     @QtCore.pyqtSlot()
     def updateVerticalTracks(self):
         """
-        Iterates through FishManagers fish_list array to update the list of vertical tracks
-        (i.e. "squeezed" fish) that are displayed on the echogram.
+        Iterates through FishManagers fish_list array to update the list of vertical
+        tracks (i.e. "squeezed" fish) that are displayed on the echogram.
         """
         if not self.playback_manager.isMappingDone():
             return

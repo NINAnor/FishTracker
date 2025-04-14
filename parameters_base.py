@@ -28,18 +28,23 @@ from log_object import LogObject
 class ParametersBase(QtCore.QObject):
     """
     Base class for parameters that can be saved to and loaded from JSON.
-    Wrapper for a dataclass Parameters, that should be implemented when inheriting this class.
-    Examples of this can be found at the end of this file, as well as in mog_parameters and detector_parameters.
+    Wrapper for a dataclass Parameters, that should be implemented when inheriting this
+    class.
+
+    Examples of this can be found at the end of this file, as well as in mog_parameters
+    and detector_parameters.
     """
 
     # Emitted when data values change.
     values_changed_signal = QtCore.pyqtSignal()
 
-    # "Abstract class" / placeholder. Should inherit dataclass when implemented in an inheriting class.
+    # "Abstract class" / placeholder. Should inherit dataclass when implemented in an
+    # inheriting class.
     class Parameters:
         pass
 
-    # "Abstract class" / placeholder. Should inherit Enum with items corresponding to fields defined in Parameters.
+    # "Abstract class" / placeholder. Should inherit Enum with items corresponding to
+    # fields defined in Parameters.
     class ParametersEnum:
         pass
 
@@ -68,7 +73,8 @@ class ParametersBase(QtCore.QObject):
 
         if type(dictionary) != dict:
             raise TypeError(
-                f"Cannot set values of '{type(self).__name__}' from a '{type(dictionary).__name__}' object."
+                f"Cannot set values of '{type(self).__name__}' from a "
+                f"'{type(dictionary).__name__}' object."
             )
 
         for key, value in dictionary.items():
@@ -101,7 +107,10 @@ class ParametersBase(QtCore.QObject):
             return True
         except (ValueError, TypeError) as e:
             LogObject().print2(
-                f"Error: Invalid value '{value}' for key '{key}' in '{type(self).__name__}',",
+                (
+                    f"Error: Invalid value '{value}' for key '{key}' in "
+                    f"'{type(self).__name__}',"
+                ),
                 e,
             )
             return False
@@ -145,7 +154,10 @@ class ParametersBase(QtCore.QObject):
 
     def __repr__(self):
         fields = [f for f in self.fields.values()]
-        repr = f"{type(self).__name__} ({fields[0].name}={getattr(self.data, fields[0].name)}"
+        repr = (
+            f"{type(self).__name__} ({fields[0].name}="
+            f"{getattr(self.data, fields[0].name)}"
+        )
         for i in range(1, len(fields)):
             repr += f", {fields[i].name}={getattr(self.data, fields[i].name)}"
         return repr + ")"

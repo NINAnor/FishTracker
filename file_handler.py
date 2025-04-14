@@ -129,39 +129,6 @@ class FSONAR_File:
 
                     frame = np.array(dst, dtype=np.uint8)
 
-                    """
-                    # Replace to make excess transparent and reshape to grid dimensions (2267, 135)
-                    # Loses pixels and possibly falsifies data
-                    if (success == True):
-                        gray = cv2.cvtColor(color, cv2.COLOR_BGR2BGRA) #Add alpha layer
-                    vcap.release()
-
-                    pts = np.array([[0,0], [768,0], [768,318], [384,475], [0,318]])
-                    rect = cv2.boundingRect(pts)
-                    x,y,w,h = rect
-                    cropped = gray[y:y+h, x:x+w].copy()
-
-                    pts = pts - pts.min(axis=0)
-                    mask = np.zeros(cropped.shape[:2], np.uint8)
-                    cv2.drawContours(mask, [pts], -1, (255,255,255), -1, cv2.LINE_AA)
-
-                    dst = cv2.bitwise_and(cropped, cropped, mask=mask)
-
-                    dst[mask == 0] = 255
-
-                    frame = np.array(dst, dtype=np.uint8)
-
-                    greyedUp = np.all(dst[...,:3] == (255, 255, 255), axis=-1)
-
-                    dst[greyedUp,3] = 0
-
-                    dstGrey = cv2.cvtColor(dst[:,:,0:3], cv2.COLOR_BGRA2GRAY)
-                    mask2 = dst[:,:,3]
-
-                    maskidx = (mask2 != 0)
-
-                    frame = np.array(dstGrey[maskidx], dtype=np.uint8)
-                    frame = frame.reshape(2267, 135)"""
                 if self.BEAM_COUNT == 18:  # Image manipulation for 18-angle
                     frame = np.array(gray, dtype=np.uint8)
                     # todo
@@ -179,13 +146,19 @@ class FSONAR_File:
             if (
                 self.reverse == 0
             ):  # check sonar mount direction (from above = 0, from below = 1)
+                # 0 flips around the x-axis, positive value (e.g. 1) flips aroundy-axis.
+                # Negative value (e.g. -1) flips around both axes (the desired behaviour
+                # for self.reverse == 1).
                 frame = cv2.flip(
                     frame.reshape((self.DATA_SHAPE[0], self.DATA_SHAPE[1])), 0
-                )  # 0 flips around the x-axis, positive value (e.g. 1) flips around y-axis. Negative value (e.g. -1) flips around both axes (the desired behaviour for self.reverse == 1).
+                )
             else:
+                # 0 flips around the x-axis, positive value (e.g. 1) flips around y-axis
+                # Negative value (e.g. -1) flips around both axes (the desired behaviour
+                # for self.reverse == 1).
                 frame = cv2.flip(
                     frame.reshape((self.DATA_SHAPE[0], self.DATA_SHAPE[1])), -1
-                )  # 0 flips around the x-axis, positive value (e.g. 1) flips around y-axis. Negative value (e.g. -1) flips around both axes (the desired behaviour for self.reverse == 1).
+                )
 
         return frame
 
@@ -215,7 +188,10 @@ class FSONAR_File:
 
         # d0 = self.sampleStartDelay * 0.000001 * self.soundSpeed/2
         d0 = self.windowStart  # in meters
-        # dm = d0 + self.samplePeriod * self.samplesPerBeam * 0.000001 * self.soundSpeed/2
+        # dm = (
+        #     d0
+        #     + self.samplePeriod * self.samplesPerBeam * 0.000001 * self.soundSpeed / 2
+        # )
         dm = self.windowStart + self.windowLength  # in meters
         # am = allAngles[-1]
         am = self.firstBeamAngle  # in degrees
@@ -255,7 +231,10 @@ class FSONAR_File:
         K = self.samplesPerBeam
         N, M = self.DATA_SHAPE
         d0 = self.windowStart
-        # dm = d0 + self.samplePeriod * self.samplesPerBeam * 0.000001 * self.soundSpeed/2
+        # dm = (
+        #     d0
+        #     + self.samplePeriod * self.samplesPerBeam * 0.000001 * self.soundSpeed / 2
+        # )
         dm = self.windowStart + self.windowLength
         am = self.firstBeamAngle
         xm = dm * np.tan(am / 180 * np.pi)

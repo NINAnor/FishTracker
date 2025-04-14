@@ -76,7 +76,8 @@ def eucl_batch(bb_test, bb_gt, radius=10):
 
 class KalmanBoxTracker:
     """
-    This class represents the internal state of individual tracked objects observed as bbox.
+    This class represents the internal state of individual tracked objects observed as
+    bbox.
     """
 
     count = 0
@@ -270,7 +271,8 @@ class Sort:
                     trk.last_det_ind if trk.last_det_frame == self.frame_count else -1
                 )
                 status = trk.get_status()
-                # HACK: "lost" are treated as "tracked", this is for main application use
+                # HACK: "lost" are treated as "tracked",
+                # this is for main application use
                 if status == 2:
                     status = 1
 

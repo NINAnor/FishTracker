@@ -73,7 +73,10 @@ class LogObject(metaclass=Singleton):
                 func(*args, **kwargs)
             except AttributeError as e:
                 print(
-                    "Potential misuse of LogObject. When calling print, remember to use LogObject() with parenthesis.",
+                    (
+                        "Potential misuse of LogObject. When calling print, "
+                        "remember to use LogObject() with parenthesis."
+                    ),
                     e,
                 )
 

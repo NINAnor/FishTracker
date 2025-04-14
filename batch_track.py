@@ -119,8 +119,8 @@ class BatchTrack(QtCore.QObject):
 
     def beginTrack(self, test=False):
         """
-        For each file in files, creates a Worker that runs track and places it in thread_pool.
-        Main thread is occupied with a call to communicate method.
+        For each file in files, creates a Worker that runs track and places it in thread
+        pool. Main thread is occupied with a call to communicate method.
         """
 
         self.state = ProcessState.RUNNING

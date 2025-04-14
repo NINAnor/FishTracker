@@ -97,7 +97,9 @@ class DetectionList(QtWidgets.QWidget):
         self.data_model = data_model
 
         # self.scroll = QtWidgets.QScrollArea(self)
-        # self.scroll.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        # self.scroll.setSizePolicy(
+        #     QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+        # )
 
         self.table = QtWidgets.QTableView(self)
         self.table.setSizePolicy(
