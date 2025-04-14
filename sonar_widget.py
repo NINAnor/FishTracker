@@ -777,11 +777,11 @@ class SonarFigure(ZoomableQLabel):
 
             # Draw detection bounding box
             if self.show_detections:
-                corners_x = self.image2viewX(det.corners[:, 1])
-                corners_y = self.image2viewY(det.corners[:, 0])
+                corners_x = self.image2viewX(det.corners[:,1])
+                corners_y = self.image2viewY(det.corners[:,0])
                 for i in range(0, 3):
                     p1 = QPointF(corners_x[i], corners_y[i])
-                    p2 = QPointF(corners_x[i + 1], corners_y[i + 1])
+                    p2 = QPointF(corners_x[i+1], corners_y[i+1])
                     painter.drawLine(p1, p2)
 
                 p1 = QPointF(corners_x[3], corners_y[3])

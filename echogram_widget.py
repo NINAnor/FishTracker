@@ -227,7 +227,9 @@ class EchoFigure(ZoomableQLabel):
                     painter.setPen(pen)
 
                     v_pos = self.window_height - (height - v_min) * v_mult
-                    painter.drawLine(h_pos_0, v_pos, h_pos_1, v_pos)
+                    start = QtCore.QPointF(h_pos_0, v_pos)
+                    end = QtCore.QPointF(h_pos_1, v_pos)
+                    painter.drawLine(start, end)
                 h_pos_0 = h_pos_1
         except ZeroDivisionError:
             pass
