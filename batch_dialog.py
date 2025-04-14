@@ -312,7 +312,9 @@ class BatchDialog(QtWidgets.QDialog):
 
         use_test_file = self.check_test is not None and self.check_test.isChecked()
 
-        f = lambda: self.batch_track.beginTrack(use_test_file)
+        def f():
+            return self.batch_track.beginTrack(use_test_file)
+
         self.playback_manager.runInThread(f)
 
         self.start_btn.setText("Cancel")
