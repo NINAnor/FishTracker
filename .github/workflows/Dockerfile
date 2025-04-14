@@ -11,4 +11,3 @@ RUN uv sync
 
 WORKDIR /app
 COPY . /app
-

@@ -1,4 +1,4 @@
-﻿"""
+"""
 This file is part of Fish Tracker.
 Copyright 2021, VTT Technical research centre of Finland Ltd.
 Developed by: Mikael Uimonen.
@@ -106,7 +106,7 @@ class DetectionList(QtWidgets.QWidget):
         self.table.setModel(data_model)
         self.table.setSortingEnabled(True)
         self.table.sortByColumn(0, QtCore.Qt.AscendingOrder)
-        self.table.setStyleSheet("QTableView\n" "{\n" "border: none;\n" "}\n" "")
+        self.table.setStyleSheet("QTableView\n{\nborder: none;\n}\n")
 
         self.vertical_layout = QtWidgets.QVBoxLayout()
         self.vertical_layout.setObjectName("verticalLayout")

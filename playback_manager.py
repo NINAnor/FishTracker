@@ -357,7 +357,7 @@ class PlaybackManager(QObject):
     def getFrameNumberText(self):
         if self.playback_thread:
             return (
-                f"Frame: {self.playback_thread.display_ind+1}/{self.sonar.frameCount}"
+                f"Frame: {self.playback_thread.display_ind + 1}/{self.sonar.frameCount}"
             )
         else:
             return "No File Loaded"

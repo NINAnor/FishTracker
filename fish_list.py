@@ -50,7 +50,7 @@ class FishList(QtWidgets.QWidget):
         self.table.setSortingEnabled(True)
         self.table.sortByColumn(1, QtCore.Qt.AscendingOrder)
         self.table.setItemDelegate(DropdownDelegate())
-        self.table.setStyleSheet("QTableView\n" "{\n" "border: none;\n" "}\n" "")
+        self.table.setStyleSheet("QTableView\n{\nborder: none;\n}\n")
         widths = [80 for i in range(self.fish_manager.columnCount())]
         widths[0] = 40
         widths[1] = 60

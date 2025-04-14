@@ -136,7 +136,7 @@ class FSONAR_File:
                         gray = cv2.cvtColor(color, cv2.COLOR_BGR2BGRA) #Add alpha layer
                     vcap.release()
 
-                    pts = np.array([[0,0], [768,0], [768,318], [384,475], [0,318]]) 
+                    pts = np.array([[0,0], [768,0], [768,318], [384,475], [0,318]])
                     rect = cv2.boundingRect(pts)
                     x,y,w,h = rect
                     cropped = gray[y:y+h, x:x+w].copy()
@@ -159,7 +159,7 @@ class FSONAR_File:
                     mask2 = dst[:,:,3]
 
                     maskidx = (mask2 != 0)
-                    
+
                     frame = np.array(dstGrey[maskidx], dtype=np.uint8)
                     frame = frame.reshape(2267, 135)"""
                 if self.BEAM_COUNT == 18:  # Image manipulation for 18-angle
