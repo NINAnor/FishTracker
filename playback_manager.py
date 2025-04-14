@@ -251,7 +251,7 @@ class PlaybackManager(QObject):
         if self.frame_timer is None:
             self.frame_timer = QTimer(self)
             self.frame_timer.timeout.connect(self.displayFrame)
-            self.frame_timer.start(1000.0 / self.fps)
+            self.frame_timer.start(int(1000.0 / self.fps))
 
 
     def displayFrame(self):
