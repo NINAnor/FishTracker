@@ -22,6 +22,7 @@ along with Fish Tracker.  If not, see <https://www.gnu.org/licenses/>.
 #the detected fishes.
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QPointF
 from main_window import MainWindow
 from image_manipulation import ImageProcessor
 from zoomable_qlabel import ZoomableQLabel
@@ -702,8 +703,8 @@ class SonarFigure(ZoomableQLabel):
             r0 = np.array((x[2],y[2]))
             r1 = np.array((x[3],y[3]))
 
-            painter.drawLine(*l0, *l1)
-            painter.drawLine(*r0, *r1)
+            painter.drawLine(QPointF(*l0), QPointF(*l1))
+            painter.drawLine(QPointF(*r0), QPointF(*r1))
 
             count = 5
 
@@ -719,14 +720,17 @@ class SonarFigure(ZoomableQLabel):
                 li = (1-t) * l0 + t * l1
                 ri = (1-t) * r0 + t * r1
 
-                painter.drawLine(*li, *(li - np.array((len,0))))
-                painter.drawLine(*ri, *(ri + np.array((len,0))))
+                painter.drawLine(QPointF(*li), QPointF(*(li - np.array((len, 0)))))
+                painter.drawLine(QPointF(*ri), QPointF(*(ri + np.array((len, 0)))))
 
                 text = "%.1f" % depth
                 text_width = QtGui.QFontMetrics(self.font()).width(text)
 
-                painter.drawText(*li + np.array((-15 - text_width, 5)), text)
-                painter.drawText(*ri + np.array((15, 5)), text)
+                offset_li = li + np.array((-15 - text_width, 5))
+                painter.drawText(QPointF(*offset_li), text)
+
+                offset_ri = ri + np.array((15, 5))
+                painter.drawText(QPointF(*offset_ri), text)
 
     def drawMeasurementLine(self, painter):
         if self.measure_origin is None or self.measure_point is None:
@@ -753,9 +757,14 @@ class SonarFigure(ZoomableQLabel):
             if self.show_detections:
                 corners_x = self.image2viewX(det.corners[:,1])
                 corners_y = self.image2viewY(det.corners[:,0])
-                for i in range(0,3):
-                    painter.drawLine(corners_x[i], corners_y[i], corners_x[i+1], corners_y[i+1])
-                painter.drawLine(corners_x[3], corners_y[3], corners_x[0], corners_y[0])
+                for i in range(0, 3):
+                    p1 = QPointF(corners_x[i], corners_y[i])
+                    p2 = QPointF(corners_x[i+1], corners_y[i+1])
+                    painter.drawLine(p1, p2)
+
+                p1 = QPointF(corners_x[3], corners_y[3])
+                p2 = QPointF(corners_x[0], corners_y[0])
+                painter.drawLine(p1, p2)
 
     def visualizeFishTracks(self, painter, fish_by_frame):
         for fish in fish_by_frame:
@@ -803,7 +812,7 @@ class SonarFigure(ZoomableQLabel):
             else:
                 x,y = pos
                 x -= text_width / 2
-            point = QtCore.QPoint(x, y)
+            point = QtCore.QPointF(x, y)
             painter.drawText(point, text)
 
     def clear(self):
