@@ -200,7 +200,9 @@ if __name__ == "__main__":
     print("")
 
     test2 = test.copy()
-    assert test == test2, "Copied parameters are not equal"
+    if test != test2:
+        raise ValueError("Copied parameters are not equal")
     key = TestParameters.ParametersEnum.test_value
     test2.setKeyValuePair(key, 0)
-    assert test != test2, "Modified parameters should not be equal"
+    if test == test2:
+        raise ValueError("Modified parameters should not be equal")
