@@ -38,7 +38,7 @@ class LabeledSlider:
         self,
         label,
         form_layout,
-        connected_functions=[],
+        connected_functions=None,
         default_value=0,
         min_value=0,
         max_value=1,
@@ -47,6 +47,8 @@ class LabeledSlider:
         reverse_mapping=None,
         formatting="{}",
     ):
+        if connected_functions is None:
+            connected_functions = []
         self.mapping = mapping
         self.reverse_mapping = reverse_mapping
         self.formatting = formatting
