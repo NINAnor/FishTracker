@@ -9,18 +9,19 @@ authors = [
   {name = "taheeraahmed", email = "taheera.ahmed@nina.no"}
 ]
 dependencies = [
-  "django-environ",
+  "matplotlib",
+  "pytz",
+  "scipy",
   "opencv-python",
   "PyQt5==5.12.3",
   "filterpy==1.4.5",
   "scikit-image",
   "seaborn",
   "scikit-learn",
-  "jinja2",
   "numba",
   "msgpack",
   "numpy",
-  "filetype>=1.2.0",
+  "filetype>=1.2.0"
 ]
 description = ""
 license = {text = "GPL-3.0+"}
