@@ -71,7 +71,7 @@ class Track:
         """Performs the predict step of KF."""
         self.kf.predict()
         self.last_position = np.concatenate((self.kf.x[0], self.kf.x[2]))
-        if self.save_history == True:
+        if self.save_history:
             self.history = np.vstack([self.history, [self.last_position]])
             if len(self.history) > self.len_history:
                 self.history = np.delete(self.history, 0, axis=0)

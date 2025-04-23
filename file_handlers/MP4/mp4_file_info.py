@@ -85,7 +85,7 @@ def mp4_getAllFramesData(fhand, version, cls):
     vid_capture = cv2.VideoCapture(fhand.name)
     gray = None
 
-    if vid_capture.isOpened() == False:
+    if not vid_capture.isOpened():
         sys.exit()
     # Read fps and frame count
     else:
@@ -109,7 +109,7 @@ def mp4_getAllFramesData(fhand, version, cls):
         # and the second is frame
         ret, frame = vid_capture.read()
 
-        if ret == True:
+        if ret:
             # BGR2BGRA for alpha layer # BGR2GRAY to erase z-dimension/colors
             # (n, n, n) => (n, n)
 
