@@ -745,7 +745,7 @@ class SonarFigure(ZoomableQLabel):
                 painter.drawLine(QPointF(*li), QPointF(*(li - np.array((len, 0)))))
                 painter.drawLine(QPointF(*ri), QPointF(*(ri + np.array((len, 0)))))
 
-                text = "%.1f" % depth
+                text = f"{depth:.1f}"
                 text_width = QtGui.QFontMetrics(self.font()).width(text)
 
                 offset_li = li + np.array((-15 - text_width, 5))
