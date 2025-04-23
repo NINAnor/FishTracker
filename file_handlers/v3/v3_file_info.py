@@ -190,7 +190,7 @@ class v3_File:
                 )[0]
 
         except FileNotFoundError as e:
-            raise FileNotFoundError(e.errno, e.strerror, filename)
+            raise FileNotFoundError(e.errno, e.strerror, filename) from e
 
         self.FRAME_SIZE = self.getFrameSize()
         self.FILE_SIZE = self.getFileSize()
@@ -256,7 +256,7 @@ class v3_File:
                     print(orderedSet[str(i)])
 
         except FileNotFoundError as e:
-            raise FileNotFoundError(e.errno, e.strerror, JSON_FILE_PATH)
+            raise FileNotFoundError(e.errno, e.strerror, JSON_FILE_PATH) from e
 
         return
 
@@ -331,7 +331,7 @@ class v3_File:
                 data = json.loads(file_headers)
                 size = data["headerSize"]["size"]
         except FileNotFoundError as e:
-            raise FileNotFoundError(e.errno, e.strerror, JSON_FILE_PATH)
+            raise FileNotFoundError(e.errno, e.strerror, JSON_FILE_PATH) from e
 
         return size
 

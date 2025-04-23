@@ -183,7 +183,7 @@ class v5_File:
                 )[0]
 
         except FileNotFoundError as e:
-            raise FileNotFoundError(e.errno, e.strerror, filename)
+            raise FileNotFoundError(e.errno, e.strerror, filename) from e
 
         self.__FRAME_SIZE = self.__setFrameSize()
         self.__FILE_SIZE = self.__getFileSize()
@@ -268,7 +268,7 @@ class v5_File:
                     print(orderedSet[str(i)])
 
         except FileNotFoundError as e:
-            raise FileNotFoundError(e.errno, e.strerror, JSON_FILE_PATH)
+            raise FileNotFoundError(e.errno, e.strerror, JSON_FILE_PATH) from e
         return
 
     def getInfo(self):
