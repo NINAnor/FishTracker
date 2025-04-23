@@ -761,8 +761,8 @@ class v5_Frame:
         return Tmatrix
 
     def constructImage(self):
-        I = self.FRAME_DATA.astype(np.uint8)
-        I = cv2.flip(I, 0)
+        image_data = self.FRAME_DATA.astype(np.uint8)
+        image_data = cv2.flip(image_data, 0)
         allAngles = bl.BeamLookUp(self.BEAM_COUNT, self.largeLens)
 
         d0 = self.sampleStartDelay * 0.000001 * self.soundSpeed / 2
@@ -771,33 +771,33 @@ class v5_Frame:
             + self.samplePeriod * self.samplesPerBeam * 0.000001 * self.soundSpeed / 2
         )
         am = allAngles[-1]
-        K = self.samplesPerBeam
-        N, M = I.shape
+        samples_per_beam = self.samplesPerBeam
+        image_height, image_width = image_data.shape
 
         xm = dm * np.tan(am / 180 * np.pi)
-        L = int(K / (dm - d0) * 2 * xm)
+        output_width = int(samples_per_beam / (dm - d0) * 2 * xm)
 
-        sx = L / (2 * xm)
-        sa = M / (2 * am)
-        sd = N / (dm - d0)
-        O = sx * d0
-        Q = sd * d0
+        sx = output_width / (2 * xm)
+        sa = image_width / (2 * am)
+        sd = image_height / (dm - d0)
+        x_offset = sx * d0
+        y_offset = sd * d0
 
         def invmap(inp):
             xi = inp[:, 0]
             yi = inp[:, 1]
-            xc = (xi - L / 2) / sx
-            yc = (K + O - yi) / sx
+            xc = (xi - output_width / 2) / sx
+            yc = (samples_per_beam + x_offset - yi) / sx
             dc = np.sqrt(xc**2 + yc**2)
             ac = np.arctan(xc / yc) / np.pi * 180
             ap = ac * sa
             dp = dc * sd
-            a = ap + M / 2
-            d = N + Q - dp
+            a = ap + image_width / 2
+            d = image_height + y_offset - dp
             outp = np.array((a, d)).T
             return outp
 
-        out = warp(I, invmap, output_shape=(K, L))
+        out = warp(image_data, invmap, output_shape=(samples_per_beam, output_width))
         return out
 
     ##############################################################

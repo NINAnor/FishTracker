@@ -200,19 +200,19 @@ class FSONAR_File:
         N, M = self.DATA_SHAPE
 
         xm = dm * np.tan(am / 180 * np.pi)
-        L = int(K / (dm - d0) * 2 * xm)
+        output_width = int(K / (dm - d0) * 2 * xm)
 
-        sx = L / (2 * xm)
+        sx = output_width / (2 * xm)
         sa = M / (2 * am)
         sd = N / (dm - d0)
-        O = sx * d0
+        x_offset = sx * d0
         Q = sd * d0
 
         def invmap(inp):
             xi = inp[:, 0]
             yi = inp[:, 1]
-            xc = (xi - L / 2) / sx
-            yc = (K + O - yi) / sx
+            xc = (xi - output_width / 2) / sx
+            yc = (K + x_offset - yi) / sx
             dc = np.sqrt(xc**2 + yc**2)
             ac = np.arctan(xc / yc) / np.pi * 180
             ap = ac * sa
@@ -224,13 +224,13 @@ class FSONAR_File:
 
         # LogObject().print2(d0, dm, am, xm, K)
 
-        out = warp(frames, invmap, output_shape=(K, L))
+        out = warp(frames, invmap, output_shape=(K, output_width))
         out = (out / np.amax(out) * 255).astype(np.uint8)
         return out
 
     def getBeamDistance(self, x, y):
-        K = self.samplesPerBeam
-        N, M = self.DATA_SHAPE
+        samples_per_beam = self.samplesPerBeam
+        data_height, data_width = self.DATA_SHAPE
         d0 = self.windowStart
         # dm = (
         #     d0
@@ -240,18 +240,18 @@ class FSONAR_File:
         am = self.firstBeamAngle
         xm = dm * np.tan(am / 180 * np.pi)
 
-        L = int(K / (dm - d0) * 2 * xm)
-        sx = L / (2 * xm)
-        sa = M / (2 * am)
-        sd = N / (dm - d0)
-        O = sx * d0
-        Q = sd * d0
+        output_width = int(samples_per_beam / (dm - d0) * 2 * xm)
+        sx = output_width / (2 * xm)
+        sa = data_width / (2 * am)
+        sd = data_height / (dm - d0)
+        x_offset = sx * d0
+        Q = sd * d0  # Not ambiguous, can remain as-is
 
-        xi = x * L
-        yi = y * K
+        xi = x * output_width
+        yi = y * samples_per_beam
 
-        xc = xi - L / 2
-        yc = K + O - yi
+        xc = xi - output_width / 2
+        yc = samples_per_beam + x_offset - yi
         dc = np.sqrt(xc**2 + yc**2)
         ac = np.arctan(xc / yc) / np.pi * 180
 
