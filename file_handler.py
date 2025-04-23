@@ -46,6 +46,7 @@ from enum import Enum, auto
 
 import filetype
 from PyQt5 import QtCore
+from skimage.transform import warp
 
 from file_handlers.MP4.mp4_file_info import *
 from file_handlers.utils import *
