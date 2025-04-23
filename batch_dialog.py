@@ -375,10 +375,10 @@ class BatchDialog(QtWidgets.QDialog):
 
 class EmptyOrIntValidator(QtGui.QIntValidator):
     def __init__(self, *args, **kwargs):
-        super(EmptyOrIntValidator, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def validate(self, text, pos):
-        state, text, pos = super(EmptyOrIntValidator, self).validate(text, pos)
+        state, text, pos = super().validate(text, pos)
 
         if state != QtGui.QValidator.Acceptable and text == "":
             state = QtGui.QValidator.Acceptable
