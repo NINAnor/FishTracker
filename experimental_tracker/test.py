@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Fish Tracker.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import random
+import secrets
 
 import cv2
 import numpy as np
@@ -89,7 +89,7 @@ def main():
                 1,
             )
             random.seed(track.id * 100)
-            [rr, gg, bb] = rgb(0, 100, random.random() * 100)
+            [rr, gg, bb] = rgb(0, 100, secrets.randbelow(100))
 
             previous = []
             for t in track.history:

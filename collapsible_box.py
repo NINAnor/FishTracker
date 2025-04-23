@@ -99,7 +99,7 @@ class CollapsibleBox(QtWidgets.QWidget):
 
 
 if __name__ == "__main__":
-    import random
+    import secrets
     import sys
 
     app = QtWidgets.QApplication(sys.argv)
@@ -115,7 +115,7 @@ if __name__ == "__main__":
         lay = QtWidgets.QVBoxLayout()
         for j in range(8):
             label = QtWidgets.QLabel(f"{j}")
-            color = QtGui.QColor(*[random.randint(0, 255) for _ in range(3)])
+            color = QtGui.QColor(*[secrets.randbelow(256) for _ in range(3)])
             label.setStyleSheet(f"background-color: {color.name()}; color : white;")
             label.setAlignment(QtCore.Qt.AlignCenter)
             lay.addWidget(label)
