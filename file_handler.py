@@ -439,7 +439,7 @@ def checkConfFile():
 
 
 def createDefaultConfFile():
-    conf = dict()
+    conf = {}
     for key in ConfKeys:
         conf[key.name] = conf_default_values[key]
 

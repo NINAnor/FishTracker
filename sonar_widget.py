@@ -480,7 +480,7 @@ class SonarViewer(QtWidgets.QDialog):
 
     def FListDetected(self):
         index = 1
-        listOfFish = list()
+        listOfFish = []
         self.FList = QtWidgets.QListWidget()
 
         for fish in self.FDetectedDict.keys():
@@ -523,8 +523,8 @@ class SonarViewer(QtWidgets.QDialog):
     def FApply(self):
         ## TODO _
         inputDict = self.FDetectedDict
-        dictToBeSaved = dict()
-        data = dict()
+        dictToBeSaved = {}
+        data = {}
         for i in inputDict.keys():
             if inputDict[i]["index"].FIfFish.isChecked():
                 dictToBeSaved[i] = inputDict[i]

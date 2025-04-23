@@ -622,7 +622,7 @@ class v4_Frame:
         if all:
             try:
                 with open(JSON_FILE_PATH) as json_fhand:
-                    orderedSet = dict()
+                    orderedSet = {}
                     frame_headers = json_fhand.read()
                     data = json.loads(frame_headers)
                     checkList = data.get("frame").keys()
