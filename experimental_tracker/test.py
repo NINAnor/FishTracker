@@ -24,12 +24,10 @@ import numpy as np
 
 from tracker import Tracker
 
-"""
-Example application for using the Tracker.
+# Example application for using the Tracker.
 
-Needs two data files: test_data.npy (detections) and
-test_image.png (for visualisation).
-"""
+# Needs two data files: test_data.npy (detections) and
+# test_image.png (for visualisation).
 
 
 def rgb(minimum, maximum, value):
