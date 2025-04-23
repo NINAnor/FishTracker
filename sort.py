@@ -149,11 +149,11 @@ def associate_detections_to_trackers(detections, trackers, search_radius=10):
         matched_indices = np.empty(shape=(0, 2))
 
     unmatched_detections = []
-    for d, det in enumerate(detections):
+    for d, _ in enumerate(detections):
         if d not in matched_indices[:, 0]:
             unmatched_detections.append(d)
     unmatched_trackers = []
-    for t, trk in enumerate(trackers):
+    for t, _ in enumerate(trackers):
         if t not in matched_indices[:, 1]:
             unmatched_trackers.append(t)
 

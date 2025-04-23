@@ -58,7 +58,7 @@ def main():
         detections[:, 1] = data[i][:, 1] + (data[i][:, 3] - data[i][:, 1]) / 2.0
         all_detections.append(detections)
 
-    for i, detections in enumerate(all_detections):
+    for _, detections in enumerate(all_detections):
         image_o_rgb = cv2.applyColorMap(image_o, cv2.COLORMAP_OCEAN)
 
         for detection in detections:
