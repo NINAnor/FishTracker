@@ -71,7 +71,7 @@ class ParametersBase(QtCore.QObject):
         emit_signal_temp = self.emit_signal
         self.emit_signal = False
 
-        if type(dictionary) != dict:
+        if type(dictionary) is not dict:
             raise TypeError(
                 f"Cannot set values of '{type(self).__name__}' from a "
                 f"'{type(dictionary).__name__}' object."
@@ -120,7 +120,7 @@ class ParametersBase(QtCore.QObject):
         Takes a key (string or enum) as an argument.
         Returns the corresponding enum if the key is valid, otherwise raises KeyError.
         """
-        if type(key) == str:
+        if type(key) is str:
             return self.ParametersEnum[key]
 
         if key in self.ParametersEnum._value2member_map_.values():

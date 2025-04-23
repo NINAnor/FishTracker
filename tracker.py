@@ -404,7 +404,7 @@ class AllTrackerParameters(QtCore.QObject):
         }
 
     def setParameterDict(self, dictionary):
-        if type(dictionary) != dict:
+        if type(dictionary) is not dict:
             raise TypeError(
                 f"Cannot set values of '{type(self).__name__}' from a "
                 f"'{type(dictionary).__name__}' object."
