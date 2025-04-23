@@ -73,8 +73,8 @@ For easier distribution, an installer can be created using a program called NSIS
 
 ## Copyright
 
-Copyright 2021, VTT Technical research centre of Finland Ltd.  
-Developed by: Mikael Uimonen and Otto Korkalo  
+Copyright 2021, VTT Technical research centre of Finland Ltd.
+Developed by: Mikael Uimonen and Otto Korkalo
 This program is licensed under GNU General Public License version 3.
 
 The above copyright notice and this license notice shall be included in all copies or substantial portions of the Software.

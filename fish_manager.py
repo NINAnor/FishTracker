@@ -17,46 +17,82 @@ You should have received a copy of the GNU General Public License
 along with Fish Tracker.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from PyQt5 import QtGui, QtCore, QtWidgets
-from PyQt5.QtCore import Qt
-
-import numpy as np
-import cv2
-import seaborn as sns
 from bisect import insort
 from enum import IntEnum
+
+import cv2
+import numpy as np
+import seaborn as sns
+from PyQt5 import QtCore, QtGui
+from PyQt5.QtCore import Qt
+
 import file_handler as fh
-from tracker import Tracker
-from tracker_parameters import TrackerParameters
-from log_object import LogObject
 from filter_parameters import FilterParameters
+from log_object import LogObject
+from tracker_parameters import TrackerParameters
 
-fish_headers = ["", "ID", "Length", "Direction", "Frame in", "Frame out", "Duration", "Detections", "MAD",
-                "Tortuosity", "Speed"]
+fish_headers = [
+    "",
+    "ID",
+    "Length",
+    "Direction",
+    "Frame in",
+    "Frame out",
+    "Duration",
+    "Detections",
+    "MAD",
+    "Tortuosity",
+    "Speed",
+]
 
-fish_sort_keys = [lambda f: f.color_ind, lambda f: f.id, lambda f: -f.length, lambda f: f.dirSortValue(),
-                  lambda f: f.frame_in, lambda f: f.frame_out, lambda f: f.duration, lambda f: f.detection_count,
-                  lambda f: f.mad, lambda f: f.tortuosity, lambda f: f.speed]
+fish_sort_keys = [
+    lambda f: f.color_ind,
+    lambda f: f.id,
+    lambda f: -f.length,
+    lambda f: f.dirSortValue(),
+    lambda f: f.frame_in,
+    lambda f: f.frame_out,
+    lambda f: f.duration,
+    lambda f: f.detection_count,
+    lambda f: f.mad,
+    lambda f: f.tortuosity,
+    lambda f: f.speed,
+]
 
-data_lambda_list = [lambda f: f.color_ind, lambda f: f.id, lambda f: f.length, lambda f: f.direction.name,
-                    lambda f: f.frame_in, lambda f: f.frame_out, lambda f: f.duration, lambda f: f.detection_count,
-                    lambda f: f.mad, lambda f: f.tortuosity, lambda f: f.speed]
+data_lambda_list = [
+    lambda f: f.color_ind,
+    lambda f: f.id,
+    lambda f: f.length,
+    lambda f: f.direction.name,
+    lambda f: f.frame_in,
+    lambda f: f.frame_out,
+    lambda f: f.duration,
+    lambda f: f.detection_count,
+    lambda f: f.mad,
+    lambda f: f.tortuosity,
+    lambda f: f.speed,
+]
 COLUMN_COUNT = 11
 
 N_COLORS = 16
-#color_palette = sns.color_palette('bright', N_COLORS)
-color_palette = [[c[2], c[1], c[0]] for c in sns.color_palette('bright', N_COLORS)]
+# color_palette = sns.color_palette('bright', N_COLORS)
+color_palette = [[c[2], c[1], c[0]] for c in sns.color_palette("bright", N_COLORS)]
 pyqt_palette = [QtGui.QColor.fromRgbF(c[2], c[1], c[0]) for c in color_palette]
 
-#color_palette_deep = sns.color_palette('deep', N_COLORS)
-color_palette_deep = [[c[2], c[1], c[0]] for c in sns.color_palette('deep', N_COLORS)]
-pyqt_palette_deep = [QtGui.QColor.fromRgbF(c[2], c[1], c[0]) for c in color_palette_deep]
+# color_palette_deep = sns.color_palette('deep', N_COLORS)
+color_palette_deep = [[c[2], c[1], c[0]] for c in sns.color_palette("deep", N_COLORS)]
+pyqt_palette_deep = [
+    QtGui.QColor.fromRgbF(c[2], c[1], c[0]) for c in color_palette_deep
+]
+
 
 # Stores and manages tracked fish items.
 # Items can be edited with the functions defined here through e.g. fish_list.py.
 class FishManager(QtCore.QAbstractTableModel):
     updateContentsSignal = QtCore.pyqtSignal()
-    updateSelectionSignal = QtCore.pyqtSignal(QtCore.QItemSelection, QtCore.QItemSelectionModel.SelectionFlags)
+    updateSelectionSignal = QtCore.pyqtSignal(
+        QtCore.QItemSelection, QtCore.QItemSelectionModel.SelectionFlags
+    )
 
     def __init__(self, playback_manager, tracker):
         super().__init__()
@@ -125,7 +161,7 @@ class FishManager(QtCore.QAbstractTableModel):
             f.frame_out = min(f.frame_in + np.random.randint(100), frame_count)
             f.duration = f.frame_out - f.frame_in + 1
             f.mad = np.random.randint(30)
-            f.tortuosity = np.random.uniform(1,2)
+            f.tortuosity = np.random.uniform(1, 2)
             self.all_fish[f.id] = f
 
         self.trimFishList()
@@ -140,7 +176,11 @@ class FishManager(QtCore.QAbstractTableModel):
         fish_list is trimmed based on the minimum duration.
         """
 
-        fl = [fish for fish in self.all_fish.values() if fish.checkConditions(self.min_detections, self.mad_limit)]
+        fl = [
+            fish
+            for fish in self.all_fish.values()
+            if fish.checkConditions(self.min_detections, self.mad_limit)
+        ]
 
         reverse = self.sort_order != QtCore.Qt.AscendingOrder
         fl.sort(key=fish_sort_keys[self.sort_ind], reverse=reverse)
@@ -149,11 +189,13 @@ class FishManager(QtCore.QAbstractTableModel):
         len_old = len(self.fish_list)
 
         if len_new > len_old:
-            self.beginInsertRows(QtCore.QModelIndex(), len_old, max(0, len_new-1))
+            self.beginInsertRows(QtCore.QModelIndex(), len_old, max(0, len_new - 1))
             self.fish_list = fl
             self.endInsertRows()
         elif len_new < len_old:
-            self.beginRemoveRows(QtCore.QModelIndex(), max(0, len_new-1), max(0, len_old-1))
+            self.beginRemoveRows(
+                QtCore.QModelIndex(), max(0, len_new - 1), max(0, len_old - 1)
+            )
             self.fish_list = fl
             self.endRemoveRows()
         else:
@@ -166,7 +208,9 @@ class FishManager(QtCore.QAbstractTableModel):
     def onFileOpened(self):
         self.clear()
         self.frame_rate = self.playback_manager.getRecordFrameRate()
-        self.frame_time = (1.0 / self.frame_rate) if self.frame_rate is not None else None
+        self.frame_time = (
+            (1.0 / self.frame_rate) if self.frame_rate is not None else None
+        )
 
     def onFileClosed(self):
         self.clear()
@@ -189,7 +233,7 @@ class FishManager(QtCore.QAbstractTableModel):
     def data(self, index, role):
         """
         Return data for TableView based on row and column.
-        Row: Fish 
+        Row: Fish
         Column: Some parameter of the fish
         """
         if role == Qt.DisplayRole:
@@ -200,16 +244,16 @@ class FishManager(QtCore.QAbstractTableModel):
                 return data_lambda_list[col](self.fish_list[row])
             except IndexError:
                 if row >= len(self.fish_list):
-                    LogObject().print("Bad index {}/{}".format(row, len(self.fish_list) - 1))
+                    LogObject().print(f"Bad index {row}/{len(self.fish_list) - 1}")
                 return QtCore.QVariant()
         else:
             return QtCore.QVariant()
-    
+
     def rowCount(self, index=None):
         return len(self.fish_list)
 
     def columnCount(self, index=None):
-        return COLUMN_COUNT;
+        return COLUMN_COUNT
 
     def allDirectionCounts(self):
         """
@@ -243,15 +287,15 @@ class FishManager(QtCore.QAbstractTableModel):
             return fish_headers[section]
 
     def sort(self, col, order=QtCore.Qt.AscendingOrder):
-        #self.layoutAboutToBeChanged.emit()
+        # self.layoutAboutToBeChanged.emit()
 
         self.sort_ind = col
         self.sort_order = order
 
         reverse = order != QtCore.Qt.AscendingOrder
-        self.fish_list.sort(key = fish_sort_keys[col], reverse = reverse)
+        self.fish_list.sort(key=fish_sort_keys[col], reverse=reverse)
 
-        #self.layoutChanged.emit()
+        # self.layoutChanged.emit()
         self.dataChanged.emit(QtCore.QModelIndex(), QtCore.QModelIndex())
 
     def getShownFish(self, row):
@@ -277,7 +321,7 @@ class FishManager(QtCore.QAbstractTableModel):
         return ind
 
     def removeFish(self, rows, update=True):
-        if(len(rows) > 0):
+        if len(rows) > 0:
             for row in sorted(rows, reverse=True):
                 if row >= len(self.fish_list):
                     continue
@@ -287,7 +331,9 @@ class FishManager(QtCore.QAbstractTableModel):
                     del_f = self.all_fish.pop(fish_id)
                     del del_f
                 except KeyError:
-                    LogObject().print("KeyError occured when removing entry with id:", fish_id)
+                    LogObject().print(
+                        "KeyError occured when removing entry with id:", fish_id
+                    )
 
             if update:
                 self.trimFishList()
@@ -333,7 +379,7 @@ class FishManager(QtCore.QAbstractTableModel):
             return
         for row in rows:
             if row >= len(self.fish_list):
-                    continue
+                continue
             self.fish_list[row].forceLengthByPercentile(self.length_percentile)
         self.dataChanged.emit(QtCore.QModelIndex(), QtCore.QModelIndex())
 
@@ -355,7 +401,9 @@ class FishManager(QtCore.QAbstractTableModel):
                 if frame >= frame_min and frame <= frame_max:
                     track, det = fish.tracks[frame]
                     center = FishEntry.trackCenter(track)
-                    distance, angle = polar_transform.cart2polMetric(center[0], center[1], True)
+                    distance, angle = polar_transform.cart2polMetric(
+                        center[0], center[1], True
+                    )
 
                     if distance >= height_min and distance <= height_max:
                         new_selection.add(ind)
@@ -375,12 +423,13 @@ class FishManager(QtCore.QAbstractTableModel):
             range = QtCore.QItemSelectionRange(ind_1, ind_2)
             selection.append(range)
 
-        self.updateSelectionSignal.emit(selection, QtCore.QItemSelectionModel.ClearAndSelect)
+        self.updateSelectionSignal.emit(
+            selection, QtCore.QItemSelectionModel.ClearAndSelect
+        )
 
     def onSelectionChanged(self, selected):
         self.selected_rows = selected
         self.updateContentsSignal.emit()
-
 
     def flags(self, index):
         if not index.isValid():
@@ -425,12 +474,20 @@ class FishManager(QtCore.QAbstractTableModel):
         """
         self.clear_old_data = False
 
-        min_dets = filter_parameters.getParameter(FilterParameters.ParametersEnum.min_duration)
-        mad_limit = filter_parameters.getParameter(FilterParameters.ParametersEnum.mad_limit)
+        min_dets = filter_parameters.getParameter(
+            FilterParameters.ParametersEnum.min_duration
+        )
+        mad_limit = filter_parameters.getParameter(
+            FilterParameters.ParametersEnum.mad_limit
+        )
         LogObject().print1(f"Filter Parameters: {min_dets} {mad_limit}")
 
         used_dets = self.applyFiltersAndGetUsedDetections(min_dets, mad_limit)
-        self.playback_manager.runInThread(lambda: self.tracker.secondaryTrack(used_dets, self.tracker.secondary_parameters))
+        self.playback_manager.runInThread(
+            lambda: self.tracker.secondaryTrack(
+                used_dets, self.tracker.secondary_parameters
+            )
+        )
 
     def updateDataFromTracker(self):
         """
@@ -460,7 +517,9 @@ class FishManager(QtCore.QAbstractTableModel):
                 raise e
 
         # Trim tails, i.e. remove last tracks with no corresponding detection.
-        if self.tracker.parameters.getParameter(TrackerParameters.ParametersEnum.trim_tails):
+        if self.tracker.parameters.getParameter(
+            TrackerParameters.ParametersEnum.trim_tails
+        ):
             for id, fish in self.all_fish.items():
                 fish.trimTail()
 
@@ -535,7 +594,11 @@ class FishManager(QtCore.QAbstractTableModel):
         Refresh calculated variables of the given fish.
         """
         fish.setFrames()
-        fish.setPathVariables(self.up_down_inverted, self.frame_time, 1.0/self.playback_manager.getPixelsPerMeter())
+        fish.setPathVariables(
+            self.up_down_inverted,
+            self.frame_time,
+            1.0 / self.playback_manager.getPixelsPerMeter(),
+        )
         fish.setLengths()
 
     def updateFishColors(self):
@@ -582,13 +645,17 @@ class FishManager(QtCore.QAbstractTableModel):
         if pixels_per_meter is not None:
             meters_per_pixel = 1.0 / pixels_per_meter
             for fish in self.all_fish.values():
-                fish.setPathVariables(self.up_down_inverted, self.frame_time, meters_per_pixel)
+                fish.setPathVariables(
+                    self.up_down_inverted, self.frame_time, meters_per_pixel
+                )
         self.dataChanged.emit(QtCore.QModelIndex(), QtCore.QModelIndex())
 
     def setShowEchogramFish(self, value):
         self.show_echogram_fish = value
 
-    def visualize(self, image, frame_ind, show_size=True, show_id=True, show_bounding_box=True):
+    def visualize(
+        self, image, frame_ind, show_size=True, show_id=True, show_bounding_box=True
+    ):
         """
         Draws the tracked fish to the full sized image using opencv.
         Returns the modified image.
@@ -597,23 +664,46 @@ class FishManager(QtCore.QAbstractTableModel):
         fish_by_frame = self.getFishInFrame(frame_ind)
         if len(fish_by_frame) == 0:
             return image
-        
-        colors = sns.color_palette('deep', max(0, len(fish_by_frame)))
+
+        colors = sns.color_palette("deep", max(0, len(fish_by_frame)))
         for fish in fish_by_frame:
             tr, det = fish.tracks[frame_ind]
             if show_id:
                 center = FishEntry.trackCenter(tr)
-                image = cv2.putText(image, f"ID: {fish.id}", (int(center[1])-20, int(center[0])+25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1, cv2.LINE_AA)
+                image = cv2.putText(
+                    image,
+                    f"ID: {fish.id}",
+                    (int(center[1]) - 20, int(center[0]) + 25),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5,
+                    (255, 255, 255),
+                    1,
+                    cv2.LINE_AA,
+                )
 
             if show_size and det is not None:
                 det.visualize(image, colors, True, False)
 
             if show_bounding_box:
-                corners = np.array([[tr[0], tr[1]], [tr[2], tr[1]], [tr[2], tr[3]], [tr[0], tr[3]]]) #, [tr[0], tr[1]]
+                corners = np.array(
+                    [[tr[0], tr[1]], [tr[2], tr[1]], [tr[2], tr[3]], [tr[0], tr[3]]]
+                )  # , [tr[0], tr[1]]
 
-                for i in range(0,3):
-                    cv2.line(image, (int(corners[i,1]),int(corners[i,0])), (int(corners[i+1,1]),int(corners[i+1,0])),  (255,255,255), 1)
-                cv2.line(image, (int(corners[3,1]),int(corners[3,0])), (int(corners[0,1]),int(corners[0,0])),  (255,255,255), 1)
+                for i in range(0, 3):
+                    cv2.line(
+                        image,
+                        (int(corners[i, 1]), int(corners[i, 0])),
+                        (int(corners[i + 1, 1]), int(corners[i + 1, 0])),
+                        (255, 255, 255),
+                        1,
+                    )
+                cv2.line(
+                    image,
+                    (int(corners[3, 1]), int(corners[3, 0])),
+                    (int(corners[0, 1]), int(corners[0, 0])),
+                    (255, 255, 255),
+                    1,
+                )
 
         return image
 
@@ -621,28 +711,34 @@ class FishManager(QtCore.QAbstractTableModel):
         return [f for f in self.fish_list if ind in f.tracks.keys()]
 
     def getSavedList(self):
-        return self.fish_list if fh.getConfValue(fh.ConfKeys.filter_tracks_on_save) else self.all_fish.values()
+        return (
+            self.fish_list
+            if fh.getConfValue(fh.ConfKeys.filter_tracks_on_save)
+            else self.all_fish.values()
+        )
 
     def saveToFile(self, path):
         """
         Tries to save all fish information (from all_fish dictionary) to a file.
         """
-        if(self.playback_manager.playback_thread is None):
+        if self.playback_manager.playback_thread is None:
             LogObject().print("No file open, cannot save.")
             return
 
         try:
             with open(path, "w") as file:
-                file.write("id;frame;length;distance;angle;direction;corner1 x;corner1 y;corner2 x;corner2 y;corner3 x;corner3 y;corner4 x;corner4 y; detection\n")
+                file.write(
+                    "id;frame;length;distance;angle;direction;corner1 x;corner1 y;corner2 x;corner2 y;corner3 x;corner3 y;corner4 x;corner4 y; detection\n"
+                )
 
                 lines = self.getSaveLines()
-                lines.sort(key = lambda l: (l[0].id, l[1]))
+                lines.sort(key=lambda l: (l[0].id, l[1]))
                 for _, _, line in lines:
                     file.write(line)
 
                 LogObject().print("Tracks saved to path:", path)
-        except PermissionError as e:
-            LogObject().print("Cannot open file {}. Permission denied.".format(path))
+        except PermissionError:
+            LogObject().print(f"Cannot open file {path}. Permission denied.")
 
     def getSaveLines(self):
         """
@@ -654,8 +750,8 @@ class FishManager(QtCore.QAbstractTableModel):
         polar_transform = self.playback_manager.playback_thread.polar_transform
 
         f1 = "{:.5f}"
-        lineBase1 = "{};{};" + "{};{};{};".format(f1,f1,f1) + "{};"
-        lineBase2 = "{};{};" + "{};{};{};".format(f1,f1,f1) + "{};"
+        lineBase1 = "{};{};" + f"{f1};{f1};{f1};" + "{};"
+        lineBase2 = "{};{};" + f"{f1};{f1};{f1};" + "{};"
 
         for fish in self.getSavedList():
             for frame, td in fish.tracks.items():
@@ -663,8 +759,17 @@ class FishManager(QtCore.QAbstractTableModel):
 
                 # Values calculated from detection
                 if detection is not None:
-                    length = fish.length if fish.length_overwritten else detection.length
-                    line = lineBase1.format(fish.id, frame, length, detection.distance, detection.angle, fish.direction.name)
+                    length = (
+                        fish.length if fish.length_overwritten else detection.length
+                    )
+                    line = lineBase1.format(
+                        fish.id,
+                        frame,
+                        length,
+                        detection.distance,
+                        detection.angle,
+                        fish.direction.name,
+                    )
                     if detection.corners is not None:
                         line += self.cornersToString(detection.corners, ";")
                     else:
@@ -677,13 +782,25 @@ class FishManager(QtCore.QAbstractTableModel):
                         length = fish.length
                     else:
                         length, _ = polar_transform.getMetricDistance(*track[:4])
-                    #center = [(track[2]+track[0])/2, (track[3]+track[1])/2]
+                    # center = [(track[2]+track[0])/2, (track[3]+track[1])/2]
                     center = FishEntry.trackCenter(track)
-                    distance, angle = polar_transform.cart2polMetric(center[0], center[1], True)
+                    distance, angle = polar_transform.cart2polMetric(
+                        center[0], center[1], True
+                    )
                     angle = float(angle / np.pi * 180 + 90)
 
-                    line = lineBase1.format(fish.id, frame, length, distance, angle, fish.direction.name)
-                    line += self.cornersToString([[track[0], track[1]], [track[2], track[1]], [track[2], track[3]], [track[0], track[3]]], ";")
+                    line = lineBase1.format(
+                        fish.id, frame, length, distance, angle, fish.direction.name
+                    )
+                    line += self.cornersToString(
+                        [
+                            [track[0], track[1]],
+                            [track[2], track[1]],
+                            [track[2], track[3]],
+                            [track[0], track[3]],
+                        ],
+                        ";",
+                    )
                     line += ";0"
 
                 lines.append((fish, frame, line + "\n"))
@@ -695,21 +812,27 @@ class FishManager(QtCore.QAbstractTableModel):
         Formats the corner information in a saveable format.
         """
         base = "{:.2f}" + delim + "{:.2f}"
-        return delim.join(base.format(cx,cy) for cy, cx in corners[0:4])
+        return delim.join(base.format(cx, cy) for cy, cx in corners[0:4])
 
     def loadFromFile(self, path):
         try:
-            with open(path, 'r') as file:
+            with open(path) as file:
                 self.clear()
                 header = file.readline()
 
                 for line in file:
-                    split_line = line.split(';')
+                    split_line = line.split(";")
                     id = int(split_line[0])
                     frame = int(split_line[1])
                     length = float(split_line[2])
                     direction = SwimDirection[split_line[5]]
-                    track = [float(split_line[7]), float(split_line[6]), float(split_line[11]), float(split_line[10]), id]
+                    track = [
+                        float(split_line[7]),
+                        float(split_line[6]),
+                        float(split_line[11]),
+                        float(split_line[10]),
+                        id,
+                    ]
 
                     if id in self.all_fish:
                         f = self.all_fish[id]
@@ -722,25 +845,29 @@ class FishManager(QtCore.QAbstractTableModel):
 
                 self.refreshAllFishData()
                 self.trimFishList(force_color_update=True)
-        except PermissionError as e:
+        except PermissionError:
             LogObject().print(f"Cannot open file {path}. Permission denied.")
         except ValueError as e:
-            LogObject().print(f"Invalid values encountered in {path}, when trying to import tracks. {e}")
+            LogObject().print(
+                f"Invalid values encountered in {path}, when trying to import tracks. {e}"
+            )
 
     def convertToWritable(self, frame, label, track):
         return [frame, label, list(map(float, track))]
 
-
     def getSaveDictionary(self):
         """
-		Returns a dictionary of fish to be saved in SaveManager.
-		"""
+        Returns a dictionary of fish to be saved in SaveManager.
+        """
         fish = {}
 
         for f in self.getSavedList():
-            fish_tracks = [self.convertToWritable(frame, int(det.label), track[0:4]) if det is not None else
-                           self.convertToWritable(frame, None, track[0:4])
-                           for frame, (track, det) in f.tracks.items()]
+            fish_tracks = [
+                self.convertToWritable(frame, int(det.label), track[0:4])
+                if det is not None
+                else self.convertToWritable(frame, None, track[0:4])
+                for frame, (track, det) in f.tracks.items()
+            ]
 
             fish[str(f.id)] = fish_tracks
 
@@ -748,8 +875,8 @@ class FishManager(QtCore.QAbstractTableModel):
 
     def applySaveDictionary(self, data, dets):
         """
-		Load fish entries from data provided by SaveManager.
-		"""
+        Load fish entries from data provided by SaveManager.
+        """
         self.clear()
         for _id, f_data in data.items():
             id = int(_id)
@@ -773,7 +900,9 @@ class FishManager(QtCore.QAbstractTableModel):
                             break
 
                     if not match_found:
-                        LogObject().print("Warning: Match not found in frame {} for label {}".format(frame, det_label))
+                        LogObject().print(
+                            f"Warning: Match not found in frame {frame} for label {det_label}"
+                        )
                 else:
                     f.addTrack(track, None, frame)
 
@@ -786,8 +915,9 @@ class FishManager(QtCore.QAbstractTableModel):
 
     def printDirectionCounts(self):
         tc, uc, dc, nc = self.allDirectionCounts()
-        LogObject().print1(f"Direction counts: Total {tc}, Up {uc}, Down {dc}, None {nc}")
-
+        LogObject().print1(
+            f"Direction counts: Total {tc}, Up {uc}, Down {dc}, None {nc}"
+        )
 
 
 class SwimDirection(IntEnum):
@@ -795,12 +925,14 @@ class SwimDirection(IntEnum):
     DOWN = 1
     NONE = 2
 
+
 def FishEntryFromTrack(track, detection, frame):
     fish = FishEntry(track[4], frame, frame)
     fish.addTrack(track, detection, frame)
     return fish
 
-class FishEntry():
+
+class FishEntry:
     def __init__(self, id, frame_in=0, frame_out=0):
         self.id = int(id)
         self.length = 0
@@ -823,7 +955,7 @@ class FishEntry():
         self.color_ind = 0
 
     def __repr__(self):
-        return "FishEntry {}: {:.1f} {}".format(self.id, self.length, self.direction.name)
+        return f"FishEntry {self.id}: {self.length:.1f} {self.direction.name}"
 
     def dirSortValue(self):
         return self.direction.value * 10**8 + self.id
@@ -835,7 +967,7 @@ class FishEntry():
     def setLengthByPercentile(self, percentile):
         if not self.length_overwritten:
             if len(self.lengths) > 0:
-                self.length = round(float(np.percentile(self.lengths, percentile)),3)
+                self.length = round(float(np.percentile(self.lengths, percentile)), 3)
 
     def forceLengthByPercentile(self, percentile):
         self.length_overwritten = False
@@ -848,7 +980,7 @@ class FishEntry():
         self.tracks[frame] = (track[0:4], detection)
         if detection is not None:
             insort(self.lengths, detection.length)
-        #self.setFrames()
+        # self.setFrames()
 
     def copy(self):
         f = FishEntry(self.id, self.frame_in, self.frame_out)
@@ -867,7 +999,7 @@ class FishEntry():
         self.frame_in = min(self.frame_in, other.frame_in)
         self.frame_out = max(self.frame_out, other.frame_out)
         self.duration = self.frame_out - self.frame_in + 1
-        
+
         for l in other.lengths:
             insort(self.lengths, l)
 
@@ -891,8 +1023,8 @@ class FishEntry():
                 tr, det = self.tracks.pop(tr_frame)
                 f.addTrack(tr, det, tr_frame)
 
-        #self.setLengths()
-        #self.setFrames()
+        # self.setLengths()
+        # self.setFrames()
         return f
 
     def trimTail(self):
@@ -902,8 +1034,8 @@ class FishEntry():
         for frame in self.getTail():
             self.tracks.pop(frame)
 
-        #self.setLengths()
-        #self.setFrames()
+        # self.setLengths()
+        # self.setFrames()
 
     def getTail(self):
         tail = []
@@ -920,7 +1052,9 @@ class FishEntry():
             self.frame_in = min(inds)
             self.frame_out = max(inds)
             self.duration = self.frame_out - self.frame_in + 1
-        self.detection_count = len([det for _, det in self.tracks.values() if det is not None])
+        self.detection_count = len(
+            [det for _, det in self.tracks.values() if det is not None]
+        )
 
     def setPathVariables(self, inverted, frame_time, meters_per_pixel):
         """
@@ -936,9 +1070,17 @@ class FishEntry():
         else:
             end_point_distance = valid_dets[-1].center - valid_dets[0].center
             if inverted:
-                self.direction = SwimDirection.UP if end_point_distance[1] <= 0 else SwimDirection.DOWN
+                self.direction = (
+                    SwimDirection.UP
+                    if end_point_distance[1] <= 0
+                    else SwimDirection.DOWN
+                )
             else:
-                self.direction = SwimDirection.UP if end_point_distance[1] > 0 else SwimDirection.DOWN
+                self.direction = (
+                    SwimDirection.UP
+                    if end_point_distance[1] > 0
+                    else SwimDirection.DOWN
+                )
 
             self.mad = abs(valid_dets[-1].angle - valid_dets[0].angle)
             path_length = self.calculatePathLength(valid_dets)
@@ -946,7 +1088,11 @@ class FishEntry():
             self.tortuosity = float(path_length / norm_dist) if norm_dist > 0 else 1
 
             if frame_time is not None:
-                self.speed = float(path_length * meters_per_pixel / ((self.frame_out - self.frame_in) * frame_time))
+                self.speed = float(
+                    path_length
+                    * meters_per_pixel
+                    / ((self.frame_out - self.frame_in) * frame_time)
+                )
             else:
                 self.speed = 0
 
@@ -960,11 +1106,14 @@ class FishEntry():
         return float(dist_sum)
 
     def setLengths(self):
-        self.lengths = sorted([det.length for _, det in self.tracks.values() if det is not None])
+        self.lengths = sorted(
+            [det.length for _, det in self.tracks.values() if det is not None]
+        )
 
     @staticmethod
     def trackCenter(track):
-        return [(track[2]+track[0])/2, (track[3]+track[1])/2]
+        return [(track[2] + track[0]) / 2, (track[3] + track[1]) / 2]
+
 
 def floatTryParse(value):
     try:
@@ -972,11 +1121,13 @@ def floatTryParse(value):
     except ValueError:
         return value, False
 
+
 def intTryParse(value):
     try:
         return int(value), True
     except ValueError:
         return value, False
+
 
 if __name__ == "__main__":
     fish_manager = FishManager(None, None)
