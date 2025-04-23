@@ -588,7 +588,7 @@ class v3_Frame:
                 self.FRAME_DATA = self.readData(frameoffset, fhand)
 
         except FileNotFoundError as e:
-            raise FileNotFoundError(e.errno, e.strerror, filename)
+            raise FileNotFoundError(e.errno, e.strerror, filename) from e
 
         self.Tmatrix = self.getTransformationMatrix()
         self.IMAGE = self.constructImage()
@@ -639,7 +639,7 @@ class v3_Frame:
                             continue
                     return orderedSet
             except FileNotFoundError as e:
-                raise FileNotFoundError(e.errno, e.strerror, JSON_FILE_PATH)
+                raise FileNotFoundError(e.errno, e.strerror, JSON_FILE_PATH) from e
 
         else:
             info = {

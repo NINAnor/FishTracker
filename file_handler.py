@@ -290,7 +290,7 @@ def FOpenSonarFile(filename):
         fhand = open(filename, "rb")
 
     except FileNotFoundError as e:
-        raise FileNotFoundError(e.errno, e.strerror, filename)
+        raise FileNotFoundError(e.errno, e.strerror, filename) from e
     # read the first 4 bytes in the file to decide the version
     version = struct.unpack(cType["uint32_t"], fhand.read(c("uint32_t")))[0]
     # if not DIDSON, check if mp4

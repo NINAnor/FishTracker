@@ -85,7 +85,7 @@ def getFrameHeaderValue(version, attributes):
     try:
         JSON = open(filePath)
     except FileNotFoundError as e:
-        raise FileNotFoundError(e.errno, e.strerror, filePath)
+        raise FileNotFoundError(e.errno, e.strerror, filePath) from e
 
     allFile = JSON.read()
     frameHeaders = json.loads(allFile)
@@ -118,7 +118,7 @@ def getFileHeaderValue(version, attributes):
     try:
         JSON = open(filePath)
     except FileNotFoundError as e:
-        raise FileNotFoundError(e.errno, e.strerror, filePath)
+        raise FileNotFoundError(e.errno, e.strerror, filePath) from e
 
     allFile = JSON.read()
     fileHeaders = json.loads(allFile)
@@ -148,7 +148,7 @@ def getFrameHeaderSize(version):
     try:
         JSON = open(filePath)
     except FileNotFoundError as e:
-        raise FileNotFoundError(e.errno, e.strerror, filePath)
+        raise FileNotFoundError(e.errno, e.strerror, filePath) from e
 
     allFile = JSON.read()
     frameHeaders = json.loads(allFile)
@@ -171,7 +171,7 @@ def getFileHeaderSize(version):
     try:
         JSON = open(filePath)
     except FileNotFoundError as e:
-        raise FileNotFoundError(e.errno, e.strerror, filePath)
+        raise FileNotFoundError(e.errno, e.strerror, filePath) from e
 
     allFile = JSON.read()
     fileHeaders = json.loads(allFile)
