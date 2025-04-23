@@ -26,7 +26,7 @@ class CollapsibleBox(QtWidgets.QWidget):
     """
 
     def __init__(self, title="", parent=None):
-        super(CollapsibleBox, self).__init__(parent)
+        super().__init__(parent)
 
         self.animation_duration = 150
         self.checked = False
