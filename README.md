@@ -71,6 +71,35 @@ so the removal of the previous bundle does not have to be confirmed.
 The resulting bundle can be found in the "dist" folder. It includes an executable, "fish_tracker.exe", which can be used to run the program.
 For easier distribution, an installer can be created using a program called NSIS or similar.
 
+## TODOs
+
+### Fix Ruff errors
+
+When running `uvx ruff check --statistics` the following errors are reported, but these will be ignored in the `pyproject.toml` file. They should be fixed in the future.
+
+| Count | Code   | Description                              |
+| ----- | ------ | ---------------------------------------- |
+| 217   | F405   | `undefined-local-with-import-star-usage` |
+| 39    | PTH123 | `builtin-open`                           |
+| 29    | F841   | `unused-variable`                        |
+| 25    | PTH118 | `os-path-join`                           |
+| 22    | A002   | `builtin-argument-shadowing`             |
+| 21    | A001   | `builtin-variable-shadowing`             |
+| 17    | F403   | `undefined-local-with-import-star`       |
+| 14    | E722   | `bare-except`                            |
+| 11    | PTH109 | `os-getcwd`                              |
+| 9     | PTH110 | `os-path-exists`                         |
+| 7     | PTH111 | `os-path-expanduser`                     |
+| 7     | F821   | `undefined-name`                         |
+| 6     | PTH100 | `os-path-abspath`                        |
+| 6     | PTH120 | `os-path-dirname`                        |
+| 5     | PTH119 | `os-path-basename`                       |
+| 3     | PTH202 | `os-path-getsize`                        |
+| 2     | PTH102 | `os-mkdir`                               |
+| 2     | PTH122 | `os-path-splitext`                       |
+| 1     | PTH112 | `os-path-isdir`                          |
+| 1     | PTH207 | `glob`                                   |
+
 ## Copyright
 
 Copyright 2021, VTT Technical research centre of Finland Ltd.

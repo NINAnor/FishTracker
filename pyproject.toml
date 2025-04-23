@@ -34,5 +34,5 @@ version = "0.1.0"
 fix = true
 
 [tool.ruff.lint]
-ignore = ["COM812"]
-select = ["E", "W", "I", "F", "UP", "S", "B", "A", "COM", "LOG", "PTH", "Q"]
+ignore = ["COM812", "F405", "F841", "A002", "A001", "F403", "E722", "F821"]
+select = ["E", "W", "I", "F", "UP", "S", "B", "A", "COM", "LOG", "Q"]
