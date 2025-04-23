@@ -187,7 +187,7 @@ class Tracker:
             detections: Measurements, Numpy array of 2D points.
         """
 
-        for i, detection in enumerate(detections):
+        for _, detection in enumerate(detections):
             # Do not initialize new track too close to existing tracks
             can_initialize = True
             for track in self.tracks:

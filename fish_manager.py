@@ -525,7 +525,7 @@ class FishManager(QtCore.QAbstractTableModel):
         if self.tracker.parameters.getParameter(
             TrackerParameters.ParametersEnum.trim_tails
         ):
-            for id, fish in self.all_fish.items():
+            for _, fish in self.all_fish.items():
                 fish.trimTail()
 
         # Refresh values
@@ -586,7 +586,7 @@ class FishManager(QtCore.QAbstractTableModel):
 
         used_dets = self.getDetectionsInFish()
         count = 0
-        for frame, dets in used_dets.items():
+        for _, dets in used_dets.items():
             count += len(dets)
         LogObject().print1(f"Total detections used in filtered results: {count}")
 
@@ -609,7 +609,7 @@ class FishManager(QtCore.QAbstractTableModel):
 
     def updateFishColors(self):
         color_ind = 0
-        for id, fish in self.all_fish.items():
+        for _, fish in self.all_fish.items():
             fish.color_ind = color_ind
             color_ind = (color_ind + 1) % N_COLORS
 
@@ -1054,7 +1054,7 @@ class FishEntry:
 
     def getTail(self):
         tail = []
-        for frame, (tr, det) in self.tracks.items():
+        for frame, (_, det) in self.tracks.items():
             if det is None:
                 tail.append(frame)
             else:

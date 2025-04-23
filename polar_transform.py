@@ -312,7 +312,7 @@ if __name__ == "__main__":
         cv2.moveWindow("polar", 400, 200)
         cv2.moveWindow("cartesian", 600, 200)
 
-        for i in range(100):
+        for _ in range(100):
             pt.remap(polar_img)
         cv2.imshow(
             "polar", cv2.resize(polar_img, (200, 400), interpolation=cv2.INTER_LINEAR)

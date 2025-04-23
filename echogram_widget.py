@@ -559,7 +559,7 @@ if __name__ == "__main__":
             min_r, max_r = self.playback_manager.getRadiusLimits()
             min_r += 0.01
 
-            for i in range(self.frameCount):
+            for _ in range(self.frameCount):
                 count = np.random.randint(0, 5)
                 if count > 0:
                     self.detections.append(
