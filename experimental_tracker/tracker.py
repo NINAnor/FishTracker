@@ -202,13 +202,14 @@ class Tracker:
     def remove_deleted(self):
         self.tracks = [t for t in self.tracks if not t.status == "Removed"]
 
-    def update(self, detections=np.empty((0, 2))):
+    def update(self, detections=None):
         """Performs track management steps.
 
         Args:
             detections: Measurements, Numpy array of 2D points.
         """
-
+        if detections is None:
+            detections = np.empty((0, 2))
         self._frame_counter += 1
 
         # Predict states etc.
