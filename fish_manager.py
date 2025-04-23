@@ -740,7 +740,8 @@ class FishManager(QtCore.QAbstractTableModel):
                 )
 
                 lines = self.getSaveLines()
-                lines.sort(key=lambda l: (l[0].id, l[1]))
+                lines.sort(key=lambda entry: (entry[0].id, entry[1]))
+
                 for _, _, line in lines:
                     file.write(line)
 
@@ -1014,8 +1015,8 @@ class FishEntry:
         self.frame_out = max(self.frame_out, other.frame_out)
         self.duration = self.frame_out - self.frame_in + 1
 
-        for l in other.lengths:
-            insort(self.lengths, l)
+        for length in other.lengths:
+            insort(self.lengths, length)
 
         for frame, track in other.tracks.items():
             if frame not in self.tracks:
