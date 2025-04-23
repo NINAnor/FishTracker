@@ -110,7 +110,7 @@ class FSONAR_File:
             while vcap.isOpened():
                 vcap.set(cv2.CAP_PROP_POS_FRAMES, FI)
                 success, color = vcap.read()
-                if success == True:
+                if success:
                     gray = cv2.cvtColor(color, cv2.COLOR_BGR2GRAY)
                 vcap.release()
 
