@@ -80,7 +80,7 @@ def getFrameHeaderValue(version, attributes):
         71713860: v4_FrameHeaderJSON,
         88491076: v5_FrameHeaderJSON,
     }
-    locationAndSize = dict()
+    locationAndSize = {}
     filePath = versions[version]
     try:
         JSON = open(filePath)
@@ -113,7 +113,7 @@ def getFileHeaderValue(version, attributes):
         71713860: v4_FileHeaderJSON,
         88491076: v5_FileHeaderJSON,
     }
-    locationAndSize = dict()
+    locationAndSize = {}
     filePath = versions[version]
     try:
         JSON = open(filePath)
@@ -166,7 +166,7 @@ def getFileHeaderSize(version):
         71713860: v4_FileHeaderJSON,
         88491076: v5_FileHeaderJSON,
     }
-    locationAndSize = dict()
+    locationAndSize = {}
     filePath = versions[version]
     try:
         JSON = open(filePath)

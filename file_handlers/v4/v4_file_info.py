@@ -225,7 +225,7 @@ class v4_File:
         return frame.ARIS_Frame(self.FILE_PATH, frameIndex, self.FRAME_SIZE)
 
     def getImages(self):
-        images = list()
+        images = []
         for frameIndex in range(self.frameCount):
             wholeFrame = frame.ARIS_Frame(self.FILE_PATH, frameIndex, self.FRAME_SIZE)
             images.append(wholeFrame.IMAGE)
@@ -234,7 +234,7 @@ class v4_File:
     def printFileHeader(self):
         try:
             with open(JSON_FILE_PATH) as json_fhand:
-                orderedSet = dict()
+                orderedSet = {}
                 file_headers = json_fhand.read()
                 data = json.loads(file_headers)
                 checkList = data.get("file").keys()

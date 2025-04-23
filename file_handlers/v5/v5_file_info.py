@@ -241,7 +241,7 @@ class v5_File:
         return frame.v5_Frame(self.__FILE_PATH, frameIndex, self.__FRAME_SIZE)
 
     def getImages(self):
-        images = list()
+        images = []
         for frameIndex in range(self.__FRAME_COUNT):
             wholeFrame = frame.v5_Frame(self.__FILE_PATH, frameIndex, self.__FRAME_SIZE)
             images.append(wholeFrame.IMAGE)
@@ -250,7 +250,7 @@ class v5_File:
     def getFileHeader(self):
         try:
             with open(JSON_FILE_PATH) as json_fhand:
-                orderedSet = dict()
+                orderedSet = {}
                 file_headers = json_fhand.read()
                 data = json.loads(file_headers)
                 checkList = data.get("file").keys()
