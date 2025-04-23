@@ -6,34 +6,12 @@ Fish Tracker is an application for semi-automatic tracking and counting of fish 
 
 ## Run with Python
 
-First, you need to install `uv` which is a package manager for Python. It can be installed with the following command:
+First, you need to install `uv` which is a package manager for Python. It can be installed by [following the official instructions](https://docs.astral.sh/uv/getting-started/installation/).
+
+Run the application with:
 
 ```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-We now need to create the Python environment. This can be done with the following command:
-
-```bash
-uv venv
-```
-
-This will create a virtual environment in the `venv` folder. To activate the environment, run:
-
-```bash
-source .venv/bin/activate
-```
-
-Then, install the required packages with:
-
-```bash
-uv sync
-```
-
-Finally, run the application with:
-
-```bash
-python main.py
+uv run main.py
 ```
 
 This will open the application.
