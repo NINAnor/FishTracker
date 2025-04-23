@@ -135,7 +135,7 @@ def main():
     try:
         unittest.main()
     finally:
-        return
+        pass
 
 
 if __name__ == "__main__":
