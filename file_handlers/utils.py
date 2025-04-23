@@ -124,7 +124,7 @@ def getFileHeaderValue(version, attributes):
     fileHeaders = json.loads(allFile)
     for attribute in attributes:
         headerLocation = fileHeaders["file"][attribute]["location"]
-        if headerLocation == None:
+        if headerLocation is None:
             print("Header " + str(attribute) + " is not available in this file type")
         headerSize = fileHeaders["file"][attribute]["size"]
         locationAndSize[attribute] = {}

@@ -342,7 +342,7 @@ class FishManager(QtCore.QAbstractTableModel):
                 self.trimFishList()
 
     def mergeFish(self, rows):
-        if rows == None or len(rows) == 0:
+        if rows is None or len(rows) == 0:
             return
 
         sorted_rows = sorted(rows)
@@ -359,7 +359,7 @@ class FishManager(QtCore.QAbstractTableModel):
         self.trimFishList()
 
     def splitFish(self, rows, frame):
-        if rows == None or len(rows) == 0:
+        if rows is None or len(rows) == 0:
             return
 
         for row in sorted(rows):
@@ -378,7 +378,7 @@ class FishManager(QtCore.QAbstractTableModel):
         self.trimFishList()
 
     def clearMeasurements(self, rows):
-        if rows == None or len(rows) == 0:
+        if rows is None or len(rows) == 0:
             return
         for row in rows:
             if row >= len(self.fish_list):
