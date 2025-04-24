@@ -8,7 +8,7 @@ dev = [
 authors = [
   {name = "Mikael Uimonen"},
   {name = "Otto Korkalo"},
-  {name = "Taheera Ahmed", email = "taheera.ahmed@nina.no"},
+  {name = "Taheera Ahmed", email = "taheera.ahmed@nina.no"}
 ]
 dependencies = [
   "matplotlib",
