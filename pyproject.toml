@@ -6,7 +6,9 @@ dev = [
 
 [project]
 authors = [
-  {name = "taheeraahmed", email = "taheera.ahmed@nina.no"}
+  {name = "Mikael Uimonen"},
+  {name = "Otto Korkalo"},
+  {name = "Taheera Ahmed", email = "taheera.ahmed@nina.no"},
 ]
 dependencies = [
   "matplotlib",
