@@ -80,8 +80,8 @@ When running `uvx ruff check --statistics` the following errors are reported, bu
 
 ## Copyright
 
-Copyright 2021, VTT Technical research centre of Finland Ltd.
-Developed by: Mikael Uimonen and Otto Korkalo
+Copyright 2025, Norwegian Institute for Nature Research.
+
 This program is licensed under GNU General Public License version 3.
 
 The above copyright notice and this license notice shall be included in all copies or substantial portions of the Software.
