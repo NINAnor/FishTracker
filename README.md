@@ -72,6 +72,7 @@ When running `uvx ruff check --statistics` the following errors are reported, bu
 | 6     | PTH100 | `os-path-abspath`                        |
 | 6     | PTH120 | `os-path-dirname`                        |
 | 5     | PTH119 | `os-path-basename`                       |
+| 4     | B008   | `function-call-in-default-argument`      |
 | 3     | PTH202 | `os-path-getsize`                        |
 | 2     | PTH102 | `os-mkdir`                               |
 | 2     | PTH122 | `os-path-splitext`                       |

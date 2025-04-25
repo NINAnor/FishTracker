@@ -185,10 +185,7 @@ class Sort:
         self.trackers = []
         self.frame_count = 0
 
-    def update(self, detz):
-        if detz is None:
-            detz = np.empty((0, 4))
-
+    def update(self, detz=np.empty((0, 4))):
         dets = np.empty((0, 2))
         if len(detz) > 0:
             dets = np.empty((len(detz), 2))
