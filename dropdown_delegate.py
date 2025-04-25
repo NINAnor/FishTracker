@@ -146,14 +146,10 @@ class Model(QtCore.QAbstractTableModel):
             | QtCore.Qt.ItemIsEditable
         )
 
-    def rowCount(self, parent):
-        if parent is None:
-            parent = QtCore.QModelIndex()
+    def rowCount(self, parent=QtCore.QModelIndex()):
         return 5
 
-    def columnCount(self, parent):
-        if parent is None:
-            parent = QtCore.QModelIndex()
+    def columnCount(self, parent=QtCore.QModelIndex()):
         return 4
 
     def data(self, index, role):
