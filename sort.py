@@ -115,9 +115,9 @@ class KalmanBoxTracker:
 
     def predict(self):
         self.kf.predict()
-        self.history.append([self.kf.x[0], self.kf.x[2]])
-        # if len(self.history) > 200:
-        #  self.history.pop(0)
+        x0 = float(self.kf.x[0])
+        x2 = float(self.kf.x[2])
+        self.history.append([x0, x2])
         return self.history[-1]
 
     def get_state(self):
