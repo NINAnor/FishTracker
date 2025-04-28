@@ -766,8 +766,8 @@ class FishManager(QtCore.QAbstractTableModel):
         Iterates through all the fish and returns a list containing the fish objects,
         frames the fish appear in, and the following information:
 
-        ID, Frame, Length, Angle, Aspect, Direction, Corner coordinates and wether the values
-        are from a detection or a track.
+        ID, Frame, Length, Angle, Aspect, Direction, Corner coordinates and wether the
+        values are from a detection or a track.
 
         Detection information are preferred over tracks.
         """
@@ -814,10 +814,18 @@ class FishManager(QtCore.QAbstractTableModel):
                         center[0], center[1], True
                     )
                     angle = float(angle / np.pi * 180 + 90)
-                    aspect = np.nan # not possible to extract this from track files if not stored
+                    aspect = (
+                        np.nan
+                    )  # not possible to extract this from track files if not stored
 
                     line = lineBase1.format(
-                        fish.id, frame, length, distance, angle, aspect, fish.direction.name
+                        fish.id,
+                        frame,
+                        length,
+                        distance,
+                        angle,
+                        aspect,
+                        fish.direction.name,
                     )
                     line += self.cornersToString(
                         [
@@ -989,19 +997,21 @@ class FishEntry:
         self.color_ind = 0
 
     def __repr__(self):
-        return f"FishEntry {self.id}: {self.length:.1f} {self.aspect:.1f} {self.direction.name}"
+        return (
+            f"FishEntry {self.id}: {self.length:.1f} "
+            f"{self.aspect:.1f} {self.direction.name}"
+        )
 
     def dirSortValue(self):
         return self.direction.value * 10**8 + self.id
-    
+
     def setAspect(self, value):
         self.aspect = value
 
     def setMeanAspect(self):
         if not self.length_overwritten:
             if len(self.aspects) > 0:
-                self.aspect = round(float(np.mean(self.aspects)),1)
-
+                self.aspect = round(float(np.mean(self.aspects)), 1)
 
     def setLength(self, value):
         self.length = value
@@ -1157,7 +1167,9 @@ class FishEntry:
         )
 
     def setAspects(self):
-        self.aspects = [det.aspect for _, det in self.tracks.values() if det is not None]
+        self.aspects = [
+            det.aspect for _, det in self.tracks.values() if det is not None
+        ]
 
     @staticmethod
     def trackCenter(track):

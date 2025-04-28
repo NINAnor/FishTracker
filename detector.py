@@ -518,10 +518,10 @@ class Detection:
         self.center = None
         self.corners = None
 
-        self.length = 0 # detection (fish) length
-        self.distance = 0 # range from sonar to detection (center?)
-        self.angle = 0 # polar coordinate angle (termed theta in Arisfish)
-        self.aspect = 0 # aspect is angle of the main axis of the detetion target 
+        self.length = 0  # detection (fish) length
+        self.distance = 0  # range from sonar to detection (center?)
+        self.angle = 0  # polar coordinate angle (termed theta in Arisfish)
+        self.aspect = 0  # aspect is angle of the main axis of the detetion target
         # relative to the acoustic axis
 
     def __repr__(self):
@@ -575,9 +575,10 @@ class Detection:
                 )
                 self.distance = float(self.distance)
                 self.angle = float(self.angle / np.pi * 180 + 90)
-                # get the aspect angle in degrees from th  eigenvector, 
-                # 0 means that the length axis of the fish is perpendicular to the sound axis
-                self.aspect = float(np.arcsin(tvect[0,0]) / np.pi * 180 + 90)   
+                # get the aspect angle in degrees from th  eigenvector,
+                # 0 means that the length axis of the fish is perpendicular to the
+                # sound axis
+                self.aspect = float(np.arcsin(tvect[0, 0]) / np.pi * 180 + 90)
 
     def init_from_file(self, corners, length, distance, angle, aspect):
         """
