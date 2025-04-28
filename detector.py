@@ -377,7 +377,7 @@ class Detector(QtCore.QObject):
 
         # Default formatting
         f1 = "{:.5f}"
-        lineBase1 = "{};" + f"{f1};{f1};{f1};"
+        lineBase1 = "{};" + f"{f1};{f1};{f1};{f1};"
 
         try:
             with open(path, "w") as file:
