@@ -382,7 +382,7 @@ class Detector(QtCore.QObject):
         try:
             with open(path, "w") as file:
                 file.write(
-                    "frame;length;distance;angle;"
+                    "frame;length;distance;angle;aspect;"
                     "corner1 x;corner1 y;corner2 x;corner2 y;"
                     "corner3 x;corner3 y;corner4 x;corner4 y\n"
                 )
@@ -392,7 +392,7 @@ class Detector(QtCore.QObject):
                             if d.corners is not None:
                                 file.write(
                                     lineBase1.format(
-                                        frame, d.length, d.distance, d.angle
+                                        frame, d.length, d.distance, d.angle, d.aspect
                                     )
                                 )
                                 file.write(d.cornersToString(";"))
@@ -425,15 +425,16 @@ class Detector(QtCore.QObject):
                     length = float(split_line[1])
                     distance = float(split_line[2])
                     angle = float(split_line[3])
+                    aspect = float(split_line[4])
 
-                    c1 = [float(split_line[5]), float(split_line[4])]
-                    c2 = [float(split_line[7]), float(split_line[6])]
-                    c3 = [float(split_line[9]), float(split_line[8])]
-                    c4 = [float(split_line[11]), float(split_line[10])]
+                    c1 = [float(split_line[6]), float(split_line[5])]
+                    c2 = [float(split_line[8]), float(split_line[7])]
+                    c3 = [float(split_line[10]), float(split_line[9])]
+                    c4 = [float(split_line[12]), float(split_line[11])]
                     corners = np.array([c1, c2, c3, c4])
 
                     det = Detection(0)
-                    det.init_from_file(corners, length, distance, angle)
+                    det.init_from_file(corners, length, distance, angle, aspect)
 
                     if self.detections[frame] is None:
                         self.detections[frame] = [det]
@@ -517,9 +518,11 @@ class Detection:
         self.center = None
         self.corners = None
 
-        self.length = 0
-        self.distance = 0
-        self.angle = 0
+        self.length = 0 # detection (fish) length
+        self.distance = 0 # range from sonar to detection (center?)
+        self.angle = 0 # polar coordinate angle (termed theta in Arisfish)
+        self.aspect = 0 # aspect is angle of the main axis of the detetion target 
+        # relative to the acoustic axis
 
     def __repr__(self):
         return f'Detection "{self.label}" d:{self.distance:.1f}, a:{self.angle:.1f}'
@@ -572,8 +575,11 @@ class Detection:
                 )
                 self.distance = float(self.distance)
                 self.angle = float(self.angle / np.pi * 180 + 90)
+                # get the aspect angle in degrees from th  eigenvector, 
+                # 0 means that the length axis of the fish is perpendicular to the sound axis
+                self.aspect = float(np.arcsin(tvect[0,0]) / np.pi * 180 + 90)   
 
-    def init_from_file(self, corners, length, distance, angle):
+    def init_from_file(self, corners, length, distance, angle, aspect):
         """
         Initialize detection parameters from a csv file. Data is not stored when
         exporting a csv file, which means it cannot be recovered here.
@@ -585,6 +591,7 @@ class Detection:
         self.length = length
         self.distance = distance
         self.angle = angle
+        self.aspect = aspect
 
     def visualize(self, image, color, show_text, show_detection=True):
         if self.corners is None:
