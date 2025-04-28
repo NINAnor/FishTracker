@@ -35,6 +35,7 @@ fish_headers = [
     "",
     "ID",
     "Length",
+    "Aspect",
     "Direction",
     "Frame in",
     "Frame out",
@@ -49,6 +50,7 @@ fish_sort_keys = [
     lambda f: f.color_ind,
     lambda f: f.id,
     lambda f: -f.length,
+    lambda f: f.aspect,
     lambda f: f.dirSortValue(),
     lambda f: f.frame_in,
     lambda f: f.frame_out,
@@ -63,6 +65,7 @@ data_lambda_list = [
     lambda f: f.color_ind,
     lambda f: f.id,
     lambda f: f.length,
+    lambda f: f.aspect,
     lambda f: f.direction.name,
     lambda f: f.frame_in,
     lambda f: f.frame_out,
@@ -72,7 +75,7 @@ data_lambda_list = [
     lambda f: f.tortuosity,
     lambda f: f.speed,
 ]
-COLUMN_COUNT = 11
+COLUMN_COUNT = 12
 
 N_COLORS = 16
 # color_palette = sns.color_palette('bright', N_COLORS)
@@ -158,6 +161,7 @@ class FishManager(QtCore.QAbstractTableModel):
         for i in range(10):
             f = FishEntry(i + 1)
             f.length = round(np.random.normal(1.2, 0.1), 3)
+            f.aspect = round(np.random.normal(0, 1), 1)
             f.direction = SwimDirection(np.random.randint(low=0, high=2))
             f.frame_in = np.random.randint(frame_count)
             f.frame_out = min(f.frame_in + np.random.randint(100), frame_count)
@@ -461,6 +465,12 @@ class FishManager(QtCore.QAbstractTableModel):
                     self.dataChanged.emit(index, index)
                     return True
             elif col == 3:
+                aspect, success = floatTryParse(value)
+                if success:
+                    fish.aspect = aspect
+                    self.dataChanged.emit(index, index)
+                    return True
+            elif col == 4:
                 try:
                     fish.direction = SwimDirection[value]
                     self.dataChanged.emit(index, index)
@@ -606,6 +616,7 @@ class FishManager(QtCore.QAbstractTableModel):
             1.0 / self.playback_manager.getPixelsPerMeter(),
         )
         fish.setLengths()
+        fish.setAspects()
 
     def updateFishColors(self):
         color_ind = 0
@@ -617,7 +628,8 @@ class FishManager(QtCore.QAbstractTableModel):
         return index.column() == 0
 
     def isDropdown(self, index):
-        return index.column() == 3
+        # return index.column() == 3
+        return index.column() == 4
 
     def dropdown_options(self):
         return [sd.name for sd in list(SwimDirection)]
@@ -734,7 +746,7 @@ class FishManager(QtCore.QAbstractTableModel):
         try:
             with open(path, "w") as file:
                 file.write(
-                    "id;frame;length;distance;angle;direction;"
+                    "id;frame;length;distance;angle;aspect;direction;"
                     "corner1 x;corner1 y;corner2 x;corner2 y;"
                     "corner3 x;corner3 y;corner4 x;corner4 y; detection\n"
                 )
@@ -754,7 +766,7 @@ class FishManager(QtCore.QAbstractTableModel):
         Iterates through all the fish and returns a list containing the fish objects,
         frames the fish appear in, and the following information:
 
-        ID, Frame, Length, Angle, Direction, Corner coordinates and wether the values
+        ID, Frame, Length, Angle, Aspect, Direction, Corner coordinates and wether the values
         are from a detection or a track.
 
         Detection information are preferred over tracks.
@@ -781,6 +793,7 @@ class FishManager(QtCore.QAbstractTableModel):
                         length,
                         detection.distance,
                         detection.angle,
+                        detection.aspect,
                         fish.direction.name,
                     )
                     if detection.corners is not None:
@@ -801,9 +814,10 @@ class FishManager(QtCore.QAbstractTableModel):
                         center[0], center[1], True
                     )
                     angle = float(angle / np.pi * 180 + 90)
+                    aspect = np.nan # not possible to extract this from track files if not stored
 
                     line = lineBase1.format(
-                        fish.id, frame, length, distance, angle, fish.direction.name
+                        fish.id, frame, length, distance, angle, aspect, fish.direction.name
                     )
                     line += self.cornersToString(
                         [
@@ -838,12 +852,13 @@ class FishManager(QtCore.QAbstractTableModel):
                     id = int(split_line[0])
                     frame = int(split_line[1])
                     length = float(split_line[2])
-                    direction = SwimDirection[split_line[5]]
+                    aspect = float(split_line[5])
+                    direction = SwimDirection[split_line[6]]
                     track = [
+                        float(split_line[8]),
                         float(split_line[7]),
-                        float(split_line[6]),
+                        float(split_line[12]),
                         float(split_line[11]),
-                        float(split_line[10]),
                         id,
                     ]
 
@@ -853,6 +868,7 @@ class FishManager(QtCore.QAbstractTableModel):
                     else:
                         f = FishEntryFromTrack(track, None, frame)
                         f.length = length
+                        f.aspect = aspect
                         f.direction = direction
                         self.all_fish[id] = f
 
@@ -951,6 +967,7 @@ class FishEntry:
     def __init__(self, id, frame_in=0, frame_out=0):
         self.id = int(id)
         self.length = 0
+        self.aspect = 0
         self.direction = SwimDirection.NONE
         self.frame_in = frame_in
         self.frame_out = frame_out
@@ -964,16 +981,27 @@ class FishEntry:
         self.detection_count = 0
 
         # lengths: Sorted list [lengths of detections]
+        # aspects: list of aspects [lengths of detections]
         self.lengths = []
+        self.aspects = []
         self.length_overwritten = False
 
         self.color_ind = 0
 
     def __repr__(self):
-        return f"FishEntry {self.id}: {self.length:.1f} {self.direction.name}"
+        return f"FishEntry {self.id}: {self.length:.1f} {self.aspect:.1f} {self.direction.name}"
 
     def dirSortValue(self):
         return self.direction.value * 10**8 + self.id
+    
+    def setAspect(self, value):
+        self.aspect = value
+
+    def setMeanAspect(self):
+        if not self.length_overwritten:
+            if len(self.aspects) > 0:
+                self.aspect = round(float(np.mean(self.aspects)),1)
+
 
     def setLength(self, value):
         self.length = value
@@ -1000,9 +1028,11 @@ class FishEntry:
     def copy(self):
         f = FishEntry(self.id, self.frame_in, self.frame_out)
         f.length = self.length
+        f.aspect = self.aspect
         f.direction = self.direction
         f.tracks = self.tracks.copy()
         f.lengths = self.lengths.copy()
+        f.aspects = self.aspects.copy()
         f.length_overwritten = self.length_overwritten
         f.color_ind = self.color_ind
         f.mad = self.mad
@@ -1125,6 +1155,9 @@ class FishEntry:
         self.lengths = sorted(
             [det.length for _, det in self.tracks.values() if det is not None]
         )
+
+    def setAspects(self):
+        self.aspects = [det.aspect for _, det in self.tracks.values() if det is not None]
 
     @staticmethod
     def trackCenter(track):
