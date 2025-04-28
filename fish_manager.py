@@ -615,8 +615,8 @@ class FishManager(QtCore.QAbstractTableModel):
             self.frame_time,
             1.0 / self.playback_manager.getPixelsPerMeter(),
         )
-        fish.setLengths()
-        fish.setAspects()
+        fish.setLengthsAndAspect()
+        fish.setMeanAspect()
 
     def updateFishColors(self):
         color_ind = 0
@@ -775,7 +775,7 @@ class FishManager(QtCore.QAbstractTableModel):
         polar_transform = self.playback_manager.playback_thread.polar_transform
 
         f1 = "{:.5f}"
-        lineBase1 = "{};{};" + f"{f1};{f1};{f1};" + "{};"
+        lineBase1 = "{};{};" + f"{f1};{f1};{f1};{f1};" + "{};"
         lineBase2 = "{};{};" + f"{f1};{f1};{f1};" + "{};"
 
         for fish in self.getSavedList():
@@ -1005,9 +1005,6 @@ class FishEntry:
     def dirSortValue(self):
         return self.direction.value * 10**8 + self.id
 
-    def setAspect(self, value):
-        self.aspect = value
-
     def setMeanAspect(self):
         if not self.length_overwritten:
             if len(self.aspects) > 0:
@@ -1078,8 +1075,6 @@ class FishEntry:
                 tr, det = self.tracks.pop(tr_frame)
                 f.addTrack(tr, det, tr_frame)
 
-        # self.setLengths()
-        # self.setFrames()
         return f
 
     def trimTail(self):
@@ -1089,9 +1084,6 @@ class FishEntry:
         """
         for frame in self.getTail():
             self.tracks.pop(frame)
-
-        # self.setLengths()
-        # self.setFrames()
 
     def getTail(self):
         tail = []
@@ -1138,16 +1130,21 @@ class FishEntry:
                     else SwimDirection.DOWN
                 )
 
-            self.mad = abs(valid_dets[-1].angle - valid_dets[0].angle)
-            path_length = self.calculatePathLength(valid_dets)
-            norm_dist = np.linalg.norm(end_point_distance)
-            self.tortuosity = float(path_length / norm_dist) if norm_dist > 0 else 1
+            self.mad = round(abs(valid_dets[-1].angle - valid_dets[0].angle), 1)
+            path_length = round(self.calculatePathLength(valid_dets), 2)
+            norm_dist = round(np.linalg.norm(end_point_distance), 2)
+            self.tortuosity = (
+                round(float(path_length / norm_dist), 2) if norm_dist > 0 else 1
+            )
 
             if frame_time is not None:
-                self.speed = float(
-                    path_length
-                    * meters_per_pixel
-                    / ((self.frame_out - self.frame_in) * frame_time)
+                self.speed = round(
+                    float(
+                        path_length
+                        * meters_per_pixel
+                        / ((self.frame_out - self.frame_in) * frame_time)
+                    ),
+                    2,
                 )
             else:
                 self.speed = 0
@@ -1161,10 +1158,15 @@ class FishEntry:
             prev_point = new_point
         return float(dist_sum)
 
-    def setLengths(self):
-        self.lengths = sorted(
-            [det.length for _, det in self.tracks.values() if det is not None]
-        )
+    def setLengthsAndAspect(self):
+        lengths = []
+        aspects = []
+        for _, det in self.tracks.values():
+            if det is not None:
+                lengths.append(det.length)
+                aspects.append(det.aspect)
+        self.lengths = sorted(lengths)
+        self.aspects = aspects
 
     def setAspects(self):
         self.aspects = [
