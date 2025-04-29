@@ -15,8 +15,8 @@ dependencies = [
   "pytz",
   "scipy",
   "opencv-python",
-  "PyQt5==5.12.3",
-  "filterpy==1.4.5",
+  "PyQt5",
+  "filterpy",
   "scikit-image",
   "seaborn",
   "scikit-learn",
@@ -29,7 +29,7 @@ description = ""
 license = {text = "GPL-3.0+"}
 name = "fishtracker"
 readme = "README.md"
-requires-python = "~=3.8"
+requires-python = "~=3.11"
 version = "0.1.0"
 
 [tool.ruff]
