@@ -33,7 +33,7 @@ from scipy.optimize import linear_sum_assignment
 
 def linear_assignment(cost_matrix):
     x, y = linear_sum_assignment(cost_matrix)
-    return np.array(list(zip(x, y)))
+    return np.array(list(zip(x, y, strict=False)))
 
 
 def iou_batch(bb_test, bb_gt):

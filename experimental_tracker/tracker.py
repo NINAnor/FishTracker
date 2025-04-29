@@ -47,7 +47,7 @@ class Tracker:
         """
 
         x, y = linear_sum_assignment(cost_matrix)
-        return np.array(list(zip(x, y)))
+        return np.array(list(zip(x, y, strict=False)))
 
     @staticmethod
     def distance(d1, d2):
