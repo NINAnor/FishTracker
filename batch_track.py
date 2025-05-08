@@ -181,8 +181,7 @@ class BatchTrack(QtCore.QObject):
         not start more processes in parallel than is defined.
         """
 
-        self.logger.info(f"Starting process for file {bt_info.file}")
-        self.logger.info(f"Process ID: {bt_info.id}")
+        self.logger.info(f"Starting process: {bt_info.file}")
 
         self.active_processes.append(bt_info.id)
         self.active_processes_changed_signal.emit()
