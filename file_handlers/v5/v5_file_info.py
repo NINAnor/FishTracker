@@ -352,6 +352,7 @@ def v5_getAllFramesData(fhand, version, cls):
         "soundSpeed",
         "samplePeriod",
         "frameRate",
+        "frameTime",
     ]
 
     fileHeader = utils.getFileHeaderValue(version, fileAttributesList)
@@ -391,6 +392,15 @@ def v5_getAllFramesData(fhand, version, cls):
     cls.frameRate = struct.unpack(
         utils.cType[frameHeader["frameRate"]["size"]],
         fhand.read(utils.c(frameHeader["frameRate"]["size"])),
+    )[0]
+
+    #   Reading Frame Time [from frame header]
+    fhand.seek(
+        cls.FILE_HEADER_SIZE + fhand.seek(frameHeader["frameTime"]["location"], 0)
+    )
+    cls.frameTime = struct.unpack(
+        utils.cType[frameHeader["frameTime"]["size"]],
+        fhand.read(utils.c(frameHeader["frameTime"]["size"])),
     )[0]
 
     #   Reading Sample Period [from frame header]

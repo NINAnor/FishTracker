@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Fish Tracker.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import datetime
 import glob
 import logging
 import sys
@@ -24,6 +25,7 @@ import traceback
 
 import cv2
 import numpy as np
+import pandas as pd
 import seaborn as sns
 import sklearn.cluster as cluster
 from PyQt5 import QtCore, QtWidgets
@@ -179,6 +181,9 @@ class Detector(QtCore.QObject):
             if labels.shape[0] > 0:
                 polar_transform = self.getPolarTransform()
 
+                # Get frame timestamp for this frame
+                frame_pc_time = self.getFramePCTime(ind)
+
                 for label in np.unique(labels):
                     foo = data[labels == label]
                     if foo.shape[0] < 2:
@@ -192,6 +197,9 @@ class Detector(QtCore.QObject):
                         ),
                         polar_transform,
                     )
+                    # Set the PC time for this detection
+                    dt = datetime.datetime.utcfromtimestamp(frame_pc_time / 1_000_000)
+                    d.frame_pc_time = dt
                     detections.append(d)
 
                 if get_images:
@@ -363,29 +371,40 @@ class Detector(QtCore.QObject):
         Writes current detections to a file at path. Values are separated by ';'.
         """
 
-        # Default formatting
-        f1 = "{:.5f}"
-        lineBase1 = "{};" + f"{f1};{f1};{f1};{f1};"
-
         try:
-            with open(path, "w") as file:
-                file.write(
-                    "frame;length;distance;angle;aspect;"
-                    "corner1 x;corner1 y;corner2 x;corner2 y;"
-                    "corner3 x;corner3 y;corner4 x;corner4 y\n"
-                )
-                for frame, dets in enumerate(self.detections):
-                    if dets is not None:
-                        for d in dets:
-                            if d.corners is not None:
-                                file.write(
-                                    lineBase1.format(
-                                        frame, d.length, d.distance, d.angle, d.aspect
-                                    )
+            rows = []
+            for frame, dets in enumerate(self.detections):
+                if dets is not None:
+                    for d in dets:
+                        if d.corners is not None:
+                            fps = self.getFrameRate()
+                            frame_pc_time = d.frame_pc_time
+                            if fps is not None and frame_pc_time is not None:
+                                # add datetime object frame_pc_time to frame*fps [s]
+                                current_time_since_start = frame * fps
+                                time = frame_pc_time + datetime.timedelta(
+                                    seconds=current_time_since_start
                                 )
-                                file.write(d.cornersToString(";"))
-                                file.write("\n")
-                self.logger.info(f"Detections saved to path: {path}")
+                            else:
+                                time = None
+
+                            row = {
+                                "frame": frame,
+                                "length": d.length,
+                                "distance": d.distance,
+                                "angle": d.angle,
+                                "aspect": d.aspect,
+                                "l2ratio": d.l2a_ratio,
+                                "time": time,
+                            }
+                            # Add corners as separate columns
+                            for i, (cy, cx) in enumerate(d.corners[0:4], 1):
+                                row[f"corner{i} x"] = cx
+                                row[f"corner{i} y"] = cy
+                            rows.append(row)
+            df = pd.DataFrame(rows)
+            df.to_csv(path, sep=";", index=False, float_format="%.3f")
+            self.logger.info(f"Detections saved to path: {path}")
 
         except PermissionError:
             self.logger.error(f"Cannot open file {path}. Permission denied.")
@@ -414,15 +433,25 @@ class Detector(QtCore.QObject):
                     distance = float(split_line[2])
                     angle = float(split_line[3])
                     aspect = float(split_line[4])
+                    l2a_ratio = float(split_line[5])
+                    frame_pc_time = int(split_line[6] * 1e6)
 
-                    c1 = [float(split_line[6]), float(split_line[5])]
-                    c2 = [float(split_line[8]), float(split_line[7])]
-                    c3 = [float(split_line[10]), float(split_line[9])]
-                    c4 = [float(split_line[12]), float(split_line[11])]
+                    c1 = [float(split_line[8]), float(split_line[7])]
+                    c2 = [float(split_line[10]), float(split_line[9])]
+                    c3 = [float(split_line[12]), float(split_line[11])]
+                    c4 = [float(split_line[14]), float(split_line[13])]
                     corners = np.array([c1, c2, c3, c4])
 
                     det = Detection(0)
-                    det.init_from_file(corners, length, distance, angle, aspect)
+                    det.init_from_file(
+                        corners,
+                        length,
+                        distance,
+                        angle,
+                        aspect,
+                        l2a_ratio,
+                        frame_pc_time,
+                    )
 
                     if self.detections[frame] is None:
                         self.detections[frame] = [det]
@@ -497,6 +526,81 @@ class Detector(QtCore.QObject):
         self.state_changed_signal.emit()
         self.all_computed_signal.emit()
 
+    def getFrameRate(self):
+        """
+        Get the frame rate (FPS) from the image provider.
+
+        Returns:
+            float: Frames per second or None if not available.
+        """
+        if hasattr(self.image_provider, "frameRate"):
+            return self.image_provider.frameRate
+        elif hasattr(self.image_provider, "fps"):
+            return self.image_provider.fps
+        else:
+            return None
+
+    def getFPSFromDetections(self):
+        """
+        Calculate FPS from frame_pc_time values in the detections.
+        Returns the calculated FPS or None if not enough data.
+        """
+        # Collect timestamps from detections
+        timestamps = []
+        for dets in self.detections:
+            if dets:
+                for d in dets:
+                    if hasattr(d, "frame_pc_time") and d.frame_pc_time:
+                        timestamps.append(d.frame_pc_time)
+
+        # Need at least two timestamps to calculate FPS
+        if len(timestamps) < 2:
+            return self.getFrameRate()  # Fall back to frame rate from image provider
+
+        # Sort timestamps and calculate differences
+        timestamps.sort()
+        diffs = []
+        for i in range(1, len(timestamps)):
+            if isinstance(timestamps[i], datetime.datetime) and isinstance(
+                timestamps[i - 1], datetime.datetime
+            ):
+                diff_seconds = (timestamps[i] - timestamps[i - 1]).total_seconds()
+                if diff_seconds > 0:
+                    diffs.append(diff_seconds)
+
+        # Calculate FPS if we have time differences
+        if diffs:
+            avg_diff = sum(diffs) / len(diffs)
+            if avg_diff > 0:
+                return 1.0 / avg_diff
+
+        # Fall back to frame rate from image provider
+        return self.getFrameRate()
+
+    def getPCTime(self):
+        """
+        Return frame sonar timestamp from image provider.
+        """
+        if hasattr(self.image_provider, "getFrameTimeStamp"):
+            timestamp = self.image_provider.getFrameTimeStamp()
+            return 0 if timestamp is None else timestamp
+        else:
+            return 0
+
+    def getFramePCTime(self, ind=None):
+        """
+        Get the PC timestamp for a frame from the image provider.
+
+        Args:
+            ind: Frame index. If None, uses current index.
+
+        Returns:
+            Frame timestamp or 0 if not available.
+        """
+        if hasattr(self.image_provider, "getFrameTimeStamp"):
+            return self.image_provider.getFrameTimeStamp() or 0
+        return 0
+
 
 class Detection:
     def __init__(self, label):
@@ -511,6 +615,8 @@ class Detection:
         self.angle = 0  # polar coordinate angle (termed theta in Arisfish)
         self.aspect = 0  # aspect is angle of the main axis of the detetion target
         # relative to the acoustic axis
+        self.l2a_ratio = 0
+        self.frame_pc_time = 0
 
     def __repr__(self):
         return f'Detection "{self.label}" d:{self.distance:.1f}, a:{self.angle:.1f}'
@@ -550,6 +656,10 @@ class Detection:
 
             self.diff = diff
 
+            det_size = ar.shape[0]
+            det_length = diff[1] * 2
+            self.l2a_ratio = det_length / det_size
+
             # Use the the eigenvectors as a rotation matrix and rotate the corners and
             # the center back
             self.corners = np.dot(corners, tvect)
@@ -568,7 +678,9 @@ class Detection:
                 # sound axis
                 self.aspect = float(np.arcsin(tvect[0, 0]) / np.pi * 180 + 90)
 
-    def init_from_file(self, corners, length, distance, angle, aspect):
+    def init_from_file(
+        self, corners, length, distance, angle, aspect, l2a_ratio=0, frame_pc_time=0
+    ):
         """
         Initialize detection parameters from a csv file. Data is not stored when
         exporting a csv file, which means it cannot be recovered here.
@@ -581,6 +693,8 @@ class Detection:
         self.distance = distance
         self.angle = angle
         self.aspect = aspect
+        self.l2a_ratio = l2a_ratio
+        self.frame_pc_time = frame_pc_time
 
     def visualize(self, image, color, show_text, show_detection=True):
         if self.corners is None:

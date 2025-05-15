@@ -165,7 +165,7 @@ class PlaybackManager(QObject):
 
     def setLoadedFile(self, sonar):
         self.sonar = sonar
-        # self.fps = sonar.frameRate
+        self.fps = sonar.frameRate
 
         # Initialize new PlaybackThread
         self.playback_thread = PlaybackThread(self.path, self.sonar, self.thread_pool)
@@ -423,6 +423,15 @@ class PlaybackManager(QObject):
         """
         if self.sonar:
             return self.sonar.frameRate
+        else:
+            return None
+
+    def getFrameTimeStamp(self):
+        """
+        Return frame sonar time stamp.
+        """
+        if self.sonar:
+            return self.sonar.frameTime
         else:
             return None
 
