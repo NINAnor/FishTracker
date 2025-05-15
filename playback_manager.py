@@ -426,6 +426,15 @@ class PlaybackManager(QObject):
         else:
             return None
 
+    def getFrameTimeStamp(self):
+        """
+        Return frame sonar time stamp.
+        """
+        if self.sonar:
+            return self.sonar.frameTime
+        else:
+            return None
+
     def getImageShape(self):
         """
         Returns (width, height) of the cartesian image in pixels.

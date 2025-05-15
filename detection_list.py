@@ -62,6 +62,10 @@ class DetectionDataModel(QtCore.QAbstractTableModel):
                 return round(d.length, 3)
             elif col == 3:
                 return round(d.aspect, 1)
+            elif col == 4:
+                return round(d.l2a_ratio, 1)
+            elif col == 5:
+                return d.frame_pc_time
             else:
                 return ""
 
@@ -76,6 +80,10 @@ class DetectionDataModel(QtCore.QAbstractTableModel):
                     return "Length (m)"
                 elif section == 3:
                     return "Aspect (°)"
+                elif section == 4:
+                    return "Length2area (m⁻¹)"
+                elif section == 5:
+                    return "Time"
             else:
                 return f"{section: >4}"
 

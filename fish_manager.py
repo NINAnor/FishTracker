@@ -146,6 +146,7 @@ class FishManager(QtCore.QAbstractTableModel):
 
         self.frame_rate = None
         self.frame_time = None
+        self.first_frame_pc_time = None
         self.update_fish_colors = False
 
         # Inverted upstream / downstream.
@@ -215,14 +216,16 @@ class FishManager(QtCore.QAbstractTableModel):
     def onFileOpened(self):
         self.clear()
         self.frame_rate = self.playback_manager.getRecordFrameRate()
+        self.first_first_frame_pc_time = self.playback_manager.getFrameTimeStamp()
         self.frame_time = (
             (1.0 / self.frame_rate) if self.frame_rate is not None else None
         )
-
+        
     def onFileClosed(self):
         self.clear()
         self.frame_rate = None
         self.frame_time = None
+        self.first_frame_pc_time = None
 
     def onTrackingInitialized(self, clearData):
         if clearData:

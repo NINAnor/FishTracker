@@ -376,13 +376,14 @@ class Detector(QtCore.QObject):
         """
 
         # Default formatting
-        f1 = "{:.5f}"
-        lineBase1 = "{};" + f"{f1};{f1};{f1};{f1};"
+        f3 = "{:.3f}"
+        f1 = "{:.1f}"
+        lineBase1 = "{};" + f"{f3};{f3};{f3};{f1};{f3};{f3};"
 
         try:
             with open(path, "w") as file:
                 file.write(
-                    "frame;length;distance;angle;aspect;"
+                    "frame;length;distance;angle;aspect;l2ratio;time"
                     "corner1 x;corner1 y;corner2 x;corner2 y;"
                     "corner3 x;corner3 y;corner4 x;corner4 y\n"
                 )
@@ -392,7 +393,7 @@ class Detector(QtCore.QObject):
                             if d.corners is not None:
                                 file.write(
                                     lineBase1.format(
-                                        frame, d.length, d.distance, d.angle, d.aspect
+                                        frame, d.length, d.distance, d.angle, d.aspect, d.l2a_ratio, d.frame_pc_time/1e6
                                     )
                                 )
                                 file.write(d.cornersToString(";"))
@@ -426,15 +427,17 @@ class Detector(QtCore.QObject):
                     distance = float(split_line[2])
                     angle = float(split_line[3])
                     aspect = float(split_line[4])
+                    l2a_ratio = float(split_line[5])
+                    frame_pc_time = int(split_line[6]*1e6)
 
-                    c1 = [float(split_line[6]), float(split_line[5])]
-                    c2 = [float(split_line[8]), float(split_line[7])]
-                    c3 = [float(split_line[10]), float(split_line[9])]
-                    c4 = [float(split_line[12]), float(split_line[11])]
+                    c1 = [float(split_line[8]), float(split_line[7])]
+                    c2 = [float(split_line[10]), float(split_line[9])]
+                    c3 = [float(split_line[12]), float(split_line[11])]
+                    c4 = [float(split_line[14]), float(split_line[13])]
                     corners = np.array([c1, c2, c3, c4])
 
                     det = Detection(0)
-                    det.init_from_file(corners, length, distance, angle, aspect)
+                    det.init_from_file(corners, length, distance, angle, aspect, l2a_ratio, frame_pc_time)
 
                     if self.detections[frame] is None:
                         self.detections[frame] = [det]
@@ -523,6 +526,8 @@ class Detection:
         self.angle = 0  # polar coordinate angle (termed theta in Arisfish)
         self.aspect = 0  # aspect is angle of the main axis of the detetion target
         # relative to the acoustic axis
+        self.l2a_ratio = 0
+        self.frame_pc_time = 0
 
     def __repr__(self):
         return f'Detection "{self.label}" d:{self.distance:.1f}, a:{self.angle:.1f}'
@@ -561,6 +566,10 @@ class Detection:
             # center+[-diff[0],-diff[1]]])
 
             self.diff = diff
+
+            det_size = ar.shape[0]
+            det_length = diff[1]*2
+            self.l2a_ratio = det_length/det_size
 
             # Use the the eigenvectors as a rotation matrix and rotate the corners and
             # the center back
