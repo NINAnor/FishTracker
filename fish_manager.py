@@ -22,6 +22,7 @@ from enum import IntEnum
 
 import cv2
 import numpy as np
+import pandas as pd
 import seaborn as sns
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import Qt
@@ -146,6 +147,7 @@ class FishManager(QtCore.QAbstractTableModel):
 
         self.frame_rate = None
         self.frame_time = None
+        self.first_frame_pc_time = None
         self.update_fish_colors = False
 
         # Inverted upstream / downstream.
@@ -215,6 +217,7 @@ class FishManager(QtCore.QAbstractTableModel):
     def onFileOpened(self):
         self.clear()
         self.frame_rate = self.playback_manager.getRecordFrameRate()
+        self.first_first_frame_pc_time = self.playback_manager.getFrameTimeStamp()
         self.frame_time = (
             (1.0 / self.frame_rate) if self.frame_rate is not None else None
         )
@@ -223,6 +226,7 @@ class FishManager(QtCore.QAbstractTableModel):
         self.clear()
         self.frame_rate = None
         self.frame_time = None
+        self.first_frame_pc_time = None
 
     def onTrackingInitialized(self, clearData):
         if clearData:
@@ -744,20 +748,39 @@ class FishManager(QtCore.QAbstractTableModel):
             return
 
         try:
-            with open(path, "w") as file:
-                file.write(
-                    "id;frame;length;distance;angle;aspect;direction;"
-                    "corner1 x;corner1 y;corner2 x;corner2 y;"
-                    "corner3 x;corner3 y;corner4 x;corner4 y; detection\n"
-                )
+            lines = self.getSaveLines()
+            lines.sort(key=lambda entry: (entry[0].id, entry[1]))
 
-                lines = self.getSaveLines()
-                lines.sort(key=lambda entry: (entry[0].id, entry[1]))
+            # Parse lines into columns for DataFrame
+            data = []
+            for _, _, line in lines:
+                # Remove trailing newline and split by ';'
+                fields = line.rstrip("\n").split(";")
+                data.append(fields)
 
-                for _, _, line in lines:
-                    file.write(line)
+                columns = [
+                    "id",
+                    "frame",
+                    "length",
+                    "distance",
+                    "angle",
+                    "aspect",
+                    "direction",
+                    "corner1 x",
+                    "corner1 y",
+                    "corner2 x",
+                    "corner2 y",
+                    "corner3 x",
+                    "corner3 y",
+                    "corner4 x",
+                    "corner4 y",
+                    "detection",
+                ]
 
-                LogObject().print("Tracks saved to path:", path)
+            df = pd.DataFrame(data, columns=columns)
+            df.to_csv(path, sep=";", index=False)
+
+            self.logger.info(f"Tracks saved to path: {str(path)}")
         except PermissionError:
             LogObject().print(f"Cannot open file {path}. Permission denied.")
 
