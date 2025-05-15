@@ -82,6 +82,7 @@ class FSONAR_File:
         self.FILE_PATH = filename
         self.frameCount = None
         self.frameRate = None
+        self.frameTime = None
         self.BEAM_COUNT = None
         self.largeLens = None
         self.highResolution = None
