@@ -802,7 +802,7 @@ class SonarFigure(ZoomableQLabel):
 
                 x = self.image2viewX(center[1]) - text_width / 2
                 y = self.image2viewY(center[0] + 10) + 11
-                point = QtCore.QPoint(x, y)
+                point = QtCore.QPointF(float(x), float(y))
 
                 painter.drawText(point, text)
 
@@ -818,10 +818,22 @@ class SonarFigure(ZoomableQLabel):
                 corners_y = self.image2viewY(np.array([tr[0], tr[2]]))
 
                 painter.setPen(pyqt_palette[fish.color_ind])
-                painter.drawLine(corners_x[0], corners_y[0], corners_x[0], corners_y[1])
-                painter.drawLine(corners_x[0], corners_y[1], corners_x[1], corners_y[1])
-                painter.drawLine(corners_x[1], corners_y[1], corners_x[1], corners_y[0])
-                painter.drawLine(corners_x[1], corners_y[0], corners_x[0], corners_y[0])
+                painter.drawLine(
+                    QtCore.QPointF(float(corners_x[0]), float(corners_y[0])),
+                    QtCore.QPointF(float(corners_x[0]), float(corners_y[1])),
+                )
+                painter.drawLine(
+                    QtCore.QPointF(float(corners_x[0]), float(corners_y[1])),
+                    QtCore.QPointF(float(corners_x[1]), float(corners_y[1])),
+                )
+                painter.drawLine(
+                    QtCore.QPointF(float(corners_x[1]), float(corners_y[1])),
+                    QtCore.QPointF(float(corners_x[1]), float(corners_y[0])),
+                )
+                painter.drawLine(
+                    QtCore.QPointF(float(corners_x[1]), float(corners_y[0])),
+                    QtCore.QPointF(float(corners_x[0]), float(corners_y[0])),
+                )
 
     def drawDetectionSizeText(self, painter, det, pos=None):
         if det.length > 0:
