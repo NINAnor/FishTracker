@@ -23,10 +23,17 @@ from collapsible_box import CollapsibleBox
 from detector_parameters_view import LabeledSlider
 from dropdown_delegate import DropdownDelegate
 
-
 # UI element for viewing and editing the tracked fish.
 # Tracked fish are stored and managed by fish_manager.py.
 #
+
+
+class RightAlignDelegate(QtWidgets.QStyledItemDelegate):
+    def initStyleOption(self, option, index):
+        super().initStyleOption(option, index)
+        option.displayAlignment = QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
+
+
 class FishList(QtWidgets.QWidget):
     selectionRowsChanged = QtCore.pyqtSignal(set)
 
@@ -56,8 +63,15 @@ class FishList(QtWidgets.QWidget):
         widths = [80 for i in range(self.fish_manager.columnCount())]
         widths[0] = 40
         widths[1] = 60
+        widths[4] = 100
+        right_cols_idx = set(range(5, self.fish_manager.columnCount()))
+        right_cols_idx.add(3)
         for i, w in enumerate(widths):
             self.table.setColumnWidth(i, w)
+            if i in right_cols_idx:
+                # Apply right alignment to desired columns
+                right_align_delegate = RightAlignDelegate(self.table)
+                self.table.setItemDelegateForColumn(i, right_align_delegate)
 
         self.fish_manager.layoutChanged.connect(self.checkDropdowns)
         self.fish_manager.dataChanged.connect(self.onDataChanged)
