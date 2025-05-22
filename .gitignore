@@ -140,3 +140,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+# FishTracker
+outputs/
+detector_parameters.json
+tracker_parameters.json
+data/
+results/
