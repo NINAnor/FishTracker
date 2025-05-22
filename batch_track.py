@@ -292,6 +292,11 @@ class BatchTrack(QtCore.QObject):
 
 @hydra.main(version_base=None, config_path="configs", config_name="default.yaml")
 def main(cfg: DictConfig) -> None:
+    if cfg.input.file_paths is None:
+        raise ValueError("No input file paths provided in the configuration.")
+    if cfg.output.directory is None:
+        raise ValueError("No output directory provided in the configuration.")
+
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s [%(levelname)s] - %(message)s",
@@ -304,13 +309,8 @@ def main(cfg: DictConfig) -> None:
     logger.info("Batch processing started")
     logger.info(f"Configuration:\n{OmegaConf.to_yaml(cfg)}")
 
-    input_path = Path(cfg.input.path)
-    files = []
-    if input_path.is_dir():
-        for ext in cfg.input.extensions:
-            files.extend(list(input_path.glob(f"**/*{ext}")))
-    else:
-        files = [input_path]
+    # Accept a list of image paths from the config
+    files = [Path(p) for p in cfg.input.file_paths]
     logger.info(f"Found {len(files)} files to process")
 
     output_path = Path(cfg.output.directory)
