@@ -744,7 +744,7 @@ class FishManager(QtCore.QAbstractTableModel):
 
     def saveToFile(self, path):
         """
-        Tries to save all fish information (from all_fish dictionary) to a file.
+        Saves all fish information to a CSV file.
         """
         if self.playback_manager.playback_thread is None:
             self.logger.error("No file open, cannot save.")
