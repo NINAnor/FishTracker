@@ -374,36 +374,59 @@ class Detector(QtCore.QObject):
         try:
             rows = []
             for frame, dets in enumerate(self.detections):
-                if dets is not None:
-                    for d in dets:
-                        if d.corners is not None:
-                            fps = self.getFrameRate()
-                            frame_pc_time = d.frame_pc_time
-                            if fps is not None and frame_pc_time is not None:
-                                # add datetime object frame_pc_time to frame*fps [s]
-                                current_time_since_start = frame * fps
-                                time = frame_pc_time + datetime.timedelta(
-                                    seconds=current_time_since_start
-                                )
-                            else:
-                                time = None
+                if not dets:
+                    continue
+                for d in dets:
+                    if d.corners is None:
+                        continue
+                    fps = self.getFrameRate()
+                    frame_pc_time = d.frame_pc_time
+                    if fps is not None and frame_pc_time is not None:
+                        current_time_since_start = frame * fps
+                        time = frame_pc_time + datetime.timedelta(
+                            seconds=current_time_since_start
+                        )
+                    else:
+                        time = None
 
-                            row = {
-                                "frame": frame,
-                                "length": d.length,
-                                "distance": d.distance,
-                                "angle": d.angle,
-                                "aspect": d.aspect,
-                                "l2ratio": d.l2a_ratio,
-                                "time": time,
-                            }
-                            # Add corners as separate columns
-                            for i, (cy, cx) in enumerate(d.corners[0:4], 1):
-                                row[f"corner{i} x"] = cx
-                                row[f"corner{i} y"] = cy
-                            rows.append(row)
+                    row = {
+                        "frame": frame,
+                        "length": d.length,
+                        "distance": d.distance,
+                        "angle": d.angle,
+                        "aspect": d.aspect,
+                        "l2ratio": d.l2a_ratio,
+                        "time": time,
+                    }
+                    # Add corners as separate columns
+                    for i, (cy, cx) in enumerate(d.corners[0:4], 1):
+                        row[f"corner{i} x"] = cx
+                        row[f"corner{i} y"] = cy
+                    rows.append(row)
             df = pd.DataFrame(rows)
-            df.to_csv(path, sep=";", index=False, float_format="%.3f")
+            df.to_csv(
+                path,
+                sep=";",
+                index=False,
+                float_format="%.3f",
+                columns=[
+                    "frame",
+                    "length",
+                    "distance",
+                    "angle",
+                    "aspect",
+                    "l2ratio",
+                    "time",
+                    "corner1 x",
+                    "corner1 y",
+                    "corner2 x",
+                    "corner2 y",
+                    "corner3 x",
+                    "corner3 y",
+                    "corner4 x",
+                    "corner4 y",
+                ],
+            )
             self.logger.info(f"Detections saved to path: {path}")
 
         except PermissionError:
@@ -545,36 +568,32 @@ class Detector(QtCore.QObject):
         Calculate FPS from frame_pc_time values in the detections.
         Returns the calculated FPS or None if not enough data.
         """
-        # Collect timestamps from detections
+        # collect timestamps from detections
         timestamps = []
         for dets in self.detections:
-            if dets:
+            if dets is not None and len(dets) > 0:
                 for d in dets:
                     if hasattr(d, "frame_pc_time") and d.frame_pc_time:
                         timestamps.append(d.frame_pc_time)
 
-        # Need at least two timestamps to calculate FPS
+        # need at least two timestamps to calculate FPS
         if len(timestamps) < 2:
-            return self.getFrameRate()  # Fall back to frame rate from image provider
+            return self.getFrameRate()
 
-        # Sort timestamps and calculate differences
+        # sort timestamps and calculate differences
         timestamps.sort()
         diffs = []
         for i in range(1, len(timestamps)):
-            if isinstance(timestamps[i], datetime.datetime) and isinstance(
-                timestamps[i - 1], datetime.datetime
-            ):
-                diff_seconds = (timestamps[i] - timestamps[i - 1]).total_seconds()
-                if diff_seconds > 0:
-                    diffs.append(diff_seconds)
+            diff_seconds = (timestamps[i] - timestamps[i - 1]).total_seconds()
+            if diff_seconds > 0:
+                diffs.append(diff_seconds)
 
-        # Calculate FPS if we have time differences
+        # calculate FPS if we have time differences
         if diffs:
             avg_diff = sum(diffs) / len(diffs)
             if avg_diff > 0:
                 return 1.0 / avg_diff
 
-        # Fall back to frame rate from image provider
         return self.getFrameRate()
 
     def getPCTime(self):
