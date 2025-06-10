@@ -16,6 +16,20 @@ uv run main.py
 
 This will open the application.
 
+## Run `batch_track.py from command line
+
+To run the `batch_track.py` script copy the `configs/example.default.yaml` and rename it to `default.yaml`. This file contains the default parameters for the script. You can modify the parameters in this file to suit your needs.
+
+If you want to run the `batch_track.py` script from the command line, you can do so by using the following command:
+
+```bash
+uv run batch_track.py --input.file_paths="[file1.aris,file2.aris]" --output.directory="/my/custom/output/path"
+```
+
+This command will process the input file and save the results to the output file. The input file should be a sonar video file, and the output file will contain the detection, tracking results and the .fish files. Keep in mind that these parameters will override the default values set in the `configs/default.yaml` file.
+
+In addition, you change different parameters in the `configs/default.yaml` file, such as the tracking and detection paramteres.
+
 ## Quickstart guide
 
 1. Open \*.aris file by choosing "File"&#8594;"Open...". Previously saved results (\*.fish files) can be opened by choosing "File"&#8594;"Load..."

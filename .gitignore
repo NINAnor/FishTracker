@@ -148,3 +148,4 @@ detector_parameters.json
 tracker_parameters.json
 data/
 results/
+configs/default.yaml
