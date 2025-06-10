@@ -588,6 +588,7 @@ class Worker(QRunnable):
         self.args = args
         self.kwargs = kwargs
         self.signals = WorkerSignals()
+        self.logger = logging.getLogger(__name__)
 
     @pyqtSlot()
     def run(self):
@@ -596,13 +597,9 @@ class Worker(QRunnable):
             result = self.fn(*self.args, **self.kwargs)
         except:
             # Log the exception to a file
-            with open("error_log.txt", "a") as f:
-                exctype, value = sys.exc_info()[:2]
-                print(f"Exception Type: {exctype}")
-                traceback.print_exc(file=f)  # Write traceback to the file
-                f.write(f"Exception Type: {exctype}\n")
-                f.write(f"Exception Value: {value}\n")
-            # Emit error signal with exception details
+            exctype, value = sys.exc_info()[:2]
+            self.logger.error(f"Exception occurred: {exctype} - {value}")
+            self.logger.error("Exception occurred", exc_info=True)
             self.signals.error.emit((exctype, value, traceback.format_exc()))
         else:
             # Return the result of the processing
