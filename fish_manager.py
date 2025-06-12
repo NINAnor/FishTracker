@@ -23,6 +23,7 @@ from enum import IntEnum
 
 import cv2
 import numpy as np
+import pandas as pd
 import seaborn as sns
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import Qt
@@ -747,20 +748,31 @@ class FishManager(QtCore.QAbstractTableModel):
             return
 
         try:
-            with open(path, "w") as file:
-                file.write(
-                    "id;frame;length;distance;angle;aspect;direction;"
-                    "corner1 x;corner1 y;corner2 x;corner2 y;"
-                    "corner3 x;corner3 y;corner4 x;corner4 y; detection\n"
-                )
+            header = [
+                "id",
+                "frame",
+                "length",
+                "distance",
+                "angle",
+                "aspect",
+                "direction",
+                "corner1 x",
+                "corner1 y",
+                "corner2 x",
+                "corner2 y",
+                "corner3 x",
+                "corner3 y",
+                "corner4 x",
+                "corner4 y",
+                "detection",
+            ]
 
-                lines = self.getSaveLines()
-                lines.sort(key=lambda entry: (entry[0].id, entry[1]))
+            rows = self.getSaveLines()
+            rows.sort(key=lambda entry: (int(entry[0]), int(entry[1])))
+            df = pd.DataFrame(rows, columns=header)
+            df.to_csv(path, sep=";", index=False)
 
-                for _, _, line in lines:
-                    file.write(line)
-
-                self.logger.info(f"Tracks saved to path: {str(path)}")
+            self.logger.info(f"Tracks saved to path: {str(path)}")
         except PermissionError:
             self.logger.error(f"Cannot open file {path}. Permission denied.")
 
@@ -774,76 +786,69 @@ class FishManager(QtCore.QAbstractTableModel):
 
         Detection information are preferred over tracks.
         """
-        lines = []
         polar_transform = self.playback_manager.playback_thread.polar_transform
-
+        rows = []
         f1 = "{:.5f}"
-        lineBase1 = "{};{};" + f"{f1};{f1};{f1};{f1};" + "{};"
-        lineBase2 = "{};{};" + f"{f1};{f1};{f1};" + "{};"
-
         for fish in self.getSavedList():
             for frame, td in fish.tracks.items():
                 track, detection = td
-
-                # Values calculated from detection
                 if detection is not None:
                     length = (
                         fish.length if fish.length_overwritten else detection.length
                     )
-                    line = lineBase1.format(
-                        fish.id,
-                        frame,
-                        length,
-                        detection.distance,
-                        detection.angle,
-                        detection.aspect,
-                        fish.direction.name,
+                    distance = detection.distance
+                    angle = detection.angle
+                    aspect = detection.aspect
+                    direction = fish.direction.name
+                    corners = (
+                        detection.corners
+                        if detection.corners is not None
+                        else [[None, None]] * 4
                     )
-                    if detection.corners is not None:
-                        line += self.cornersToString(detection.corners, ";")
-                    else:
-                        line += ";".join(8 * [" "])
-                    line += ";1"
-
-                # Values calculated from track
+                    detection_flag = 1
                 else:
                     if fish.length_overwritten:
                         length = fish.length
                     else:
                         length, _ = polar_transform.getMetricDistance(*track[:4])
-                    # center = [(track[2]+track[0])/2, (track[3]+track[1])/2]
                     center = FishEntry.trackCenter(track)
                     distance, angle = polar_transform.cart2polMetric(
                         center[0], center[1], True
                     )
                     angle = float(angle / np.pi * 180 + 90)
-                    aspect = (
-                        np.nan
-                    )  # not possible to extract this from track files if not stored
+                    aspect = np.nan
+                    direction = fish.direction.name
+                    corners = [
+                        [track[0], track[1]],
+                        [track[2], track[1]],
+                        [track[2], track[3]],
+                        [track[0], track[3]],
+                    ]
+                    detection_flag = 0
 
-                    line = lineBase1.format(
-                        fish.id,
-                        frame,
-                        length,
-                        distance,
-                        angle,
-                        aspect,
-                        fish.direction.name,
-                    )
-                    line += self.cornersToString(
-                        [
-                            [track[0], track[1]],
-                            [track[2], track[1]],
-                            [track[2], track[3]],
-                            [track[0], track[3]],
-                        ],
-                        ";",
-                    )
-                    line += ";0"
+                # Flatten corners for csv
+                flat_corners = []
+                for c in corners[:4]:
+                    if c is not None:
+                        flat_corners.extend([f"{c[1]:.2f}", f"{c[0]:.2f}"])
+                    else:
+                        flat_corners.extend(["", ""])
+                row = [
+                    fish.id,
+                    frame,
+                    f1.format(length),
+                    f1.format(distance),
+                    f1.format(angle),
+                    f1.format(aspect)
+                    if aspect is not None and not pd.isna(aspect)
+                    else "",
+                    direction,
+                    *flat_corners,
+                    detection_flag,
+                ]
+                rows.append(row)
 
-                lines.append((fish, frame, line + "\n"))
-
-        return lines
+        return rows
 
     def cornersToString(self, corners, delim):
         """
