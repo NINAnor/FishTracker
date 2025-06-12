@@ -294,7 +294,7 @@ class BatchTrack(QtCore.QObject):
 def main(cfg: DictConfig) -> None:
     if cfg.input.file_paths is None:
         raise ValueError("No input file paths provided in the configuration.")
-    if cfg.output.directory is None:
+    if cfg.output.directory is None or cfg.output.directory == "<output_dir>":
         raise ValueError("No output directory provided in the configuration.")
 
     logging.basicConfig(
@@ -303,6 +303,9 @@ def main(cfg: DictConfig) -> None:
         datefmt="%Y-%m-%d %H:%M:%S",
         force=True,
     )
+    # this environement varaible needs to be set for Qt to work in headless mode
+    # (e.g., when running in a server environment without a display)
+    os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
     logger = logging.getLogger(__name__)
 
