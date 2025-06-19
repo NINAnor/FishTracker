@@ -26,7 +26,8 @@ dependencies = [
   "filetype>=1.2.0",
   "tqdm",
   "hydra-core",
-  "omegaconf"
+  "omegaconf",
+  "pandas"
 ]
 description = ""
 license = {text = "GPL-3.0+"}
