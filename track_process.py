@@ -18,6 +18,7 @@ along with Fish Tracker.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import argparse
+import logging
 import multiprocessing as mp
 import os
 import sys
@@ -30,7 +31,6 @@ from PyQt5 import QtCore, QtWidgets
 import file_handler as fh
 from detector import Detector, DetectorParameters
 from fish_manager import FishManager
-from log_object import LogObject
 from playback_manager import PlaybackManager, TestFigure
 from save_manager import SaveManager
 from tracker import Tracker, TrackingState
@@ -124,7 +124,9 @@ class TrackProcess(QtCore.QObject):
 
     exit_signal = QtCore.pyqtSignal()
 
-    def __init__(self, app: QtWidgets.QApplication, info: TrackProcessInfo):
+    def __init__(
+        self, app: QtWidgets.QApplication, info: TrackProcessInfo, params_tracker=None
+    ):
         super().__init__()
         self.app = app
         self.info = info
@@ -152,6 +154,9 @@ class TrackProcess(QtCore.QObject):
 
         self.detector = Detector(self.playback_manager)
         self.tracker = Tracker(self.detector)
+
+        if params_tracker is not None:
+            self.tracker.setAllParameters(params_tracker)
         self.setParametersFromDict(info.params_detector_dict, info.params_tracker_dict)
 
         self.fish_manager = FishManager(self.playback_manager, self.tracker)
@@ -162,11 +167,7 @@ class TrackProcess(QtCore.QObject):
         self.playback_manager.fps = 100
         self.playback_manager.runInThread(self.listenConnection)
 
-        log = LogObject()
-        log.disconnectDefault()
-        # log.connect(writeToFile)
-        log.connect(self.writeToConnection)
-        log.print("Process created for file: ", self.file)
+        self.logger = logging.getLogger(__name__)
 
     def setParametersFromDict(
         self, params_detector_dict: dict, params_tracker_dict: dict
@@ -235,8 +236,6 @@ class TrackProcess(QtCore.QObject):
         else:
             self.playback_manager.loadFile(self.file)
 
-        LogObject().print("Frame count:", self.playback_manager.getFrameCount())
-
         if self.display:
             self.playback_manager.frame_available.connect(self.forwardImageDisplay)
         else:
@@ -295,6 +294,8 @@ class TrackProcess(QtCore.QObject):
             save_path = self.getSaveFilePath(".fish")
             self.save_manager.saveFile(save_path, self.binary)
 
+        self.logger.info(f"Results saved to {self.save_directory}")
+
     def onAllComputed(self, tracking_state):
         """
         Saves and quits the process.
@@ -308,9 +309,11 @@ class TrackProcess(QtCore.QObject):
         self.app.quit()
 
 
-def trackProcess(process_info: TrackProcessInfo):
+def trackProcess(process_info: TrackProcessInfo, params_tracker=None):
     app = QtWidgets.QApplication(sys.argv)
-    process = TrackProcess(app, process_info)
+    process = TrackProcess(app, process_info, params_tracker=params_tracker)
+    logger = logging.getLogger(__name__)
+    logger.info("Starting track process")
     process.track()
     sys.exit(app.exec_())
 

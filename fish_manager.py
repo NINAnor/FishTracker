@@ -17,18 +17,19 @@ You should have received a copy of the GNU General Public License
 along with Fish Tracker.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import logging
 from bisect import insort
 from enum import IntEnum
 
 import cv2
 import numpy as np
+import pandas as pd
 import seaborn as sns
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import Qt
 
 import file_handler as fh
 from filter_parameters import FilterParameters
-from log_object import LogObject
 from tracker_parameters import TrackerParameters
 
 fish_headers = [
@@ -111,6 +112,7 @@ class FishManager(QtCore.QAbstractTableModel):
 
         # All fish items currently stored.
         self.all_fish = {}
+        self.logger = logging.getLogger(__name__)
 
         # Fish items that are currently displayed.
         self.fish_list = []
@@ -251,7 +253,7 @@ class FishManager(QtCore.QAbstractTableModel):
                 return data_lambda_list[col](self.fish_list[row])
             except IndexError:
                 if row >= len(self.fish_list):
-                    LogObject().print(f"Bad index {row}/{len(self.fish_list) - 1}")
+                    self.logger.error(f"Bad index {row}/{len(self.fish_list) - 1}")
                 return QtCore.QVariant()
         else:
             return QtCore.QVariant()
@@ -338,7 +340,7 @@ class FishManager(QtCore.QAbstractTableModel):
                     del_f = self.all_fish.pop(fish_id)
                     del del_f
                 except KeyError:
-                    LogObject().print(
+                    self.logger.error(
                         "KeyError occured when removing entry with id:", fish_id
                     )
 
@@ -495,7 +497,9 @@ class FishManager(QtCore.QAbstractTableModel):
         mad_limit = filter_parameters.getParameter(
             FilterParameters.ParametersEnum.mad_limit
         )
-        LogObject().print1(f"Filter Parameters: {min_dets} {mad_limit}")
+        self.logger.info(
+            f"Filter Parameters - min_dets: {min_dets}, mad_limit: {mad_limit}"
+        )
 
         used_dets = self.applyFiltersAndGetUsedDetections(min_dets, mad_limit)
         self.playback_manager.runInThread(
@@ -590,15 +594,15 @@ class FishManager(QtCore.QAbstractTableModel):
         if mad_limit is not None:
             self.mad_limit = mad_limit
 
-        LogObject().print1(f"Fish before applying filters: {len(self.all_fish)}")
+        self.logger.info(f"Fish before applying filters: {len(self.all_fish)}")
         self.applyFilters()
-        LogObject().print1(f"Fish after applying filters: {len(self.all_fish)}")
+        self.logger.info(f"Fish after applying filters: {len(self.all_fish)}")
 
         used_dets = self.getDetectionsInFish()
         count = 0
         for _, dets in used_dets.items():
             count += len(dets)
-        LogObject().print1(f"Total detections used in filtered results: {count}")
+        self.logger.info(f"Total detections used in filtered results: {count}")
 
         self.min_detections = temp_min_detections
         self.mad_limit = temp_mad_limit
@@ -740,26 +744,37 @@ class FishManager(QtCore.QAbstractTableModel):
         Tries to save all fish information (from all_fish dictionary) to a file.
         """
         if self.playback_manager.playback_thread is None:
-            LogObject().print("No file open, cannot save.")
+            self.logger.error("No file open, cannot save.")
             return
 
         try:
-            with open(path, "w") as file:
-                file.write(
-                    "id;frame;length;distance;angle;aspect;direction;"
-                    "corner1 x;corner1 y;corner2 x;corner2 y;"
-                    "corner3 x;corner3 y;corner4 x;corner4 y; detection\n"
-                )
+            header = [
+                "id",
+                "frame",
+                "length",
+                "distance",
+                "angle",
+                "aspect",
+                "direction",
+                "corner1 x",
+                "corner1 y",
+                "corner2 x",
+                "corner2 y",
+                "corner3 x",
+                "corner3 y",
+                "corner4 x",
+                "corner4 y",
+                "detection",
+            ]
 
-                lines = self.getSaveLines()
-                lines.sort(key=lambda entry: (entry[0].id, entry[1]))
+            rows = self.getSaveLines()
+            rows.sort(key=lambda entry: (int(entry[0]), int(entry[1])))
+            df = pd.DataFrame(rows, columns=header)
+            df.to_csv(path, sep=";", index=False)
 
-                for _, _, line in lines:
-                    file.write(line)
-
-                LogObject().print("Tracks saved to path:", path)
+            self.logger.info(f"Tracks saved to path: {str(path)}")
         except PermissionError:
-            LogObject().print(f"Cannot open file {path}. Permission denied.")
+            self.logger.error(f"Cannot open file {path}. Permission denied.")
 
     def getSaveLines(self):
         """
@@ -771,76 +786,69 @@ class FishManager(QtCore.QAbstractTableModel):
 
         Detection information are preferred over tracks.
         """
-        lines = []
         polar_transform = self.playback_manager.playback_thread.polar_transform
-
+        rows = []
         f1 = "{:.5f}"
-        lineBase1 = "{};{};" + f"{f1};{f1};{f1};{f1};" + "{};"
-        lineBase2 = "{};{};" + f"{f1};{f1};{f1};" + "{};"
-
         for fish in self.getSavedList():
             for frame, td in fish.tracks.items():
                 track, detection = td
-
-                # Values calculated from detection
                 if detection is not None:
                     length = (
                         fish.length if fish.length_overwritten else detection.length
                     )
-                    line = lineBase1.format(
-                        fish.id,
-                        frame,
-                        length,
-                        detection.distance,
-                        detection.angle,
-                        detection.aspect,
-                        fish.direction.name,
+                    distance = detection.distance
+                    angle = detection.angle
+                    aspect = detection.aspect
+                    direction = fish.direction.name
+                    corners = (
+                        detection.corners
+                        if detection.corners is not None
+                        else [[None, None]] * 4
                     )
-                    if detection.corners is not None:
-                        line += self.cornersToString(detection.corners, ";")
-                    else:
-                        line += ";".join(8 * [" "])
-                    line += ";1"
-
-                # Values calculated from track
+                    detection_flag = 1
                 else:
                     if fish.length_overwritten:
                         length = fish.length
                     else:
                         length, _ = polar_transform.getMetricDistance(*track[:4])
-                    # center = [(track[2]+track[0])/2, (track[3]+track[1])/2]
                     center = FishEntry.trackCenter(track)
                     distance, angle = polar_transform.cart2polMetric(
                         center[0], center[1], True
                     )
                     angle = float(angle / np.pi * 180 + 90)
-                    aspect = (
-                        np.nan
-                    )  # not possible to extract this from track files if not stored
+                    aspect = np.nan
+                    direction = fish.direction.name
+                    corners = [
+                        [track[0], track[1]],
+                        [track[2], track[1]],
+                        [track[2], track[3]],
+                        [track[0], track[3]],
+                    ]
+                    detection_flag = 0
 
-                    line = lineBase1.format(
-                        fish.id,
-                        frame,
-                        length,
-                        distance,
-                        angle,
-                        aspect,
-                        fish.direction.name,
-                    )
-                    line += self.cornersToString(
-                        [
-                            [track[0], track[1]],
-                            [track[2], track[1]],
-                            [track[2], track[3]],
-                            [track[0], track[3]],
-                        ],
-                        ";",
-                    )
-                    line += ";0"
+                # Flatten corners for csv
+                flat_corners = []
+                for c in corners[:4]:
+                    if c is not None:
+                        flat_corners.extend([f"{c[1]:.2f}", f"{c[0]:.2f}"])
+                    else:
+                        flat_corners.extend(["", ""])
+                row = [
+                    fish.id,
+                    frame,
+                    f1.format(length),
+                    f1.format(distance),
+                    f1.format(angle),
+                    f1.format(aspect)
+                    if aspect is not None and not pd.isna(aspect)
+                    else "",
+                    direction,
+                    *flat_corners,
+                    detection_flag,
+                ]
+                rows.append(row)
 
-                lines.append((fish, frame, line + "\n"))
-
-        return lines
+        return rows
 
     def cornersToString(self, corners, delim):
         """
@@ -883,9 +891,9 @@ class FishManager(QtCore.QAbstractTableModel):
                 self.refreshAllFishData()
                 self.trimFishList(force_color_update=True)
         except PermissionError:
-            LogObject().print(f"Cannot open file {path}. Permission denied.")
+            self.logger.error(f"Cannot open file {path}. Permission denied.")
         except ValueError as e:
-            LogObject().print(
+            self.logger.error(
                 f"Invalid values encountered in {path}, "
                 f"when trying to import tracks. {e}"
             )
@@ -938,7 +946,7 @@ class FishManager(QtCore.QAbstractTableModel):
                             break
 
                     if not match_found:
-                        LogObject().print(
+                        self.logger.warning(
                             f"Warning: Match not found in frame {frame} "
                             f"for label {det_label}"
                         )
@@ -954,9 +962,7 @@ class FishManager(QtCore.QAbstractTableModel):
 
     def printDirectionCounts(self):
         tc, uc, dc, nc = self.allDirectionCounts()
-        LogObject().print1(
-            f"Direction counts: Total {tc}, Up {uc}, Down {dc}, None {nc}"
-        )
+        self.logger.info(f"Direction counts: Total {tc}, Up {uc}, Down {dc}, None {nc}")
 
 
 class SwimDirection(IntEnum):

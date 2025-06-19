@@ -18,6 +18,7 @@ along with Fish Tracker.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import glob
+import logging
 import sys
 import traceback
 
@@ -26,10 +27,10 @@ import numpy as np
 import seaborn as sns
 import sklearn.cluster as cluster
 from PyQt5 import QtCore, QtWidgets
+from tqdm import tqdm
 
 from background_subtractor import BackgroundSubtractor
 from detector_parameters import DetectorParameters
-from log_object import LogObject
 from mog_parameters import MOGParameters
 from playback_manager import PlaybackManager, TestFigure
 
@@ -58,6 +59,7 @@ class Detector(QtCore.QObject):
 
     def __init__(self, image_provider):
         super().__init__()
+        self.logger = logging.getLogger(__name__)
         self.image_provider = image_provider
         self.bg_subtractor = BackgroundSubtractor(image_provider)
         self.parameters = None
@@ -206,37 +208,24 @@ class Detector(QtCore.QObject):
 
     def computeAll(self):
         self.computing = True
-        self.stop_computing = False
-        self.compute_on_event = False
-        self.state_changed_signal.emit()
-
-        LogObject().print1(self.bg_subtractor.mog_parameters)
-        LogObject().print1(self.parameters)
 
         if self.bg_subtractor.parametersDirty():
             self.initMOG()
             if self.bg_subtractor.parametersDirty():
-                LogObject().print("Stopped before detecting.")
+                self.logger.info("Stopped before detecting.")
                 self.abortComputing(True)
                 return
 
         count = self.image_provider.getFrameCount()
-        ten_perc = 0.1 * count
-        print_limit = 0
-        for ind in range(count):
-            if ind > print_limit:
-                LogObject().print("Detecting:", int(float(ind) / count * 100), "%")
-                print_limit += ten_perc
-
-            if self.stop_computing:
-                LogObject().print("Stopped detecting at", ind)
-                self.abortComputing(False)
-                return
-
+        for ind in tqdm(range(count), desc="Detecting", unit="frames"):
             img = self.image_provider.getFrame(ind)
             self.computeBase(ind, img)
 
-        LogObject().print("Detecting: 100 %")
+            if self.stop_computing:
+                self.logger.info(f"Stopped detecting at {ind}")
+                self.abortComputing(False)
+                return
+
         self.computing = False
         # self.detections_clearable = True
         self.applied_parameters = self.parameters.copy()
@@ -266,7 +255,6 @@ class Detector(QtCore.QObject):
             self.bg_subtractor.abortComputing()
 
     def clearDetections(self):
-        LogObject().print2("Cleared detections")
         nof_frames = self.image_provider.getFrameCount()
         self.detections = [None] * nof_frames
         self.vertical_detections = []
@@ -318,7 +306,7 @@ class Detector(QtCore.QObject):
 
             return [d for d in dets if d.center is not None]
         except IndexError:
-            LogObject().print2(traceback.format_exc())
+            self.logger.error(traceback.format_exc())
 
     def getDetections(self):
         return [
@@ -344,7 +332,7 @@ class Detector(QtCore.QObject):
             if set_as_applied:
                 self.applied_parameters = self.parameters.copy()
         else:
-            LogObject().print2("Detector parameters not found.")
+            self.logger.warning("Detector parameters not found.")
 
         if "bg_subtractor" in param_dict.keys():
             self.bg_subtractor.mog_parameters.setParameterDict(
@@ -353,7 +341,7 @@ class Detector(QtCore.QObject):
             if set_as_applied:
                 self.bg_subtractor.applyParameters()
         else:
-            LogObject().print2("Background subtractor parameters not found.")
+            self.logger.warning("Background subtractor parameters not found.")
 
     def bgSubtraction(self, image):
         median_size = self.parameters.getParameter(
@@ -397,10 +385,10 @@ class Detector(QtCore.QObject):
                                 )
                                 file.write(d.cornersToString(";"))
                                 file.write("\n")
-                LogObject().print("Detections saved to path:", path)
+                self.logger.info(f"Detections saved to path: {path}")
 
         except PermissionError:
-            LogObject().print(f"Cannot open file {path}. Permission denied.")
+            self.logger.error(f"Cannot open file {path}. Permission denied.")
 
     def loadDetectionsFromFile(self, path):
         """
@@ -444,15 +432,15 @@ class Detector(QtCore.QObject):
                 self.updateVerticalDetections()
                 self.compute_on_event = False
                 if ignored_dets > 0:
-                    LogObject().print(
+                    self.logger.warning(
                         f"Encountered {ignored_dets} detections that were out of range "
                         f"{nof_frames}."
                     )
 
         except PermissionError:
-            LogObject().print(f"Cannot open file {path}. Permission denied.")
+            self.logger.error(f"Cannot open file {path}. Permission denied.")
         except ValueError as e:
-            LogObject().print(
+            self.logger.error(
                 f"Invalid values encountered in {path}, "
                 f"when trying to import detections. {e}"
             )
@@ -694,7 +682,7 @@ class DetectorDisplay:
         for i in range(self.getFrameCount()):
             self.readParameters()
             images = self.detector.compute(i, self.getFrame(i), True)
-            LogObject().print(images)
+            self.logger.info(images)
             self.updateWindows(*images)
 
     def showWindow(self):
