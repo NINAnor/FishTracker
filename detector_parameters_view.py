@@ -204,7 +204,7 @@ class DetectorParametersView(QWidget):
         def lambda_learning_rate(x):
             return bg_sub.setParameter(MOGParameters.ParametersEnum.learning_rate, x)
 
-        lr_validator = FloatValidator(bottom=0.0, top=1.0, decimals=3)
+        lr_validator = FloatValidator(bottom=-1.0, top=1.0, decimals=3)
         lr_validator.setNotation(QDoubleValidator.StandardNotation)
         self.learning_rate_line = addLine(
             "Learning rate",
