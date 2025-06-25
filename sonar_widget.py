@@ -762,7 +762,7 @@ class SonarFigure(ZoomableQLabel):
         x = self.image2viewX(np.array((self.measure_origin[0], self.measure_point[0])))
         y = self.image2viewY(np.array((self.measure_origin[1], self.measure_point[1])))
 
-        painter.drawLine(x[0], y[0], x[1], y[1])
+        painter.drawLine(QPointF(x[0], y[0]), QPointF(x[1], y[1]))
 
     def visualizeDetections(self, painter, detections):
         painter.setPen(QtCore.Qt.white)
