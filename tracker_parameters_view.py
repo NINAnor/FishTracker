@@ -107,7 +107,7 @@ class TrackerParametersView(QScrollArea):
         else:
             self.cancelTrack()
 
-    def cancelTrack():
+    def cancelTrack(self):
         if self.detector.bg_subtractor.initializing:
             self.detector.bg_subtractor.stop_initializing = True
         elif self.detector.computing:
