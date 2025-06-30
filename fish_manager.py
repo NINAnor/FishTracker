@@ -751,7 +751,7 @@ class FishManager(QtCore.QAbstractTableModel):
             return
 
         try:
-            header = [
+            columns = [
                 "id",
                 "frame",
                 "length",
@@ -772,8 +772,12 @@ class FishManager(QtCore.QAbstractTableModel):
 
             rows = self.getSaveLines()
             rows.sort(key=lambda entry: (int(entry[0]), int(entry[1])))
-            df = pd.DataFrame(rows, columns=header)
-            df.to_csv(path, sep=";", index=False)
+            if rows:
+                df = pd.DataFrame(rows)
+            else:
+                df = pd.DataFrame(columns=columns)
+
+            df.to_csv(path, sep=";", index=False, columns=columns, float_format="%.3f")
 
             self.logger.info(f"Tracks saved to path: {str(path)}")
         except PermissionError:
