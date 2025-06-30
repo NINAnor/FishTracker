@@ -403,29 +403,38 @@ class Detector(QtCore.QObject):
                         row[f"corner{i} x"] = cx
                         row[f"corner{i} y"] = cy
                     rows.append(row)
-            df = pd.DataFrame(rows)
+
+            # Define columns to ensure consistent CSV structure
+            columns = [
+                "frame",
+                "length",
+                "distance",
+                "angle",
+                "aspect",
+                "l2ratio",
+                "time",
+                "corner1 x",
+                "corner1 y",
+                "corner2 x",
+                "corner2 y",
+                "corner3 x",
+                "corner3 y",
+                "corner4 x",
+                "corner4 y",
+            ]
+
+            # if rows is empty, create empty DataFrame with defined columns
+            if rows:
+                df = pd.DataFrame(rows)
+            else:
+                df = pd.DataFrame(columns=columns)
+
             df.to_csv(
                 path,
                 sep=";",
                 index=False,
                 float_format="%.3f",
-                columns=[
-                    "frame",
-                    "length",
-                    "distance",
-                    "angle",
-                    "aspect",
-                    "l2ratio",
-                    "time",
-                    "corner1 x",
-                    "corner1 y",
-                    "corner2 x",
-                    "corner2 y",
-                    "corner3 x",
-                    "corner3 y",
-                    "corner4 x",
-                    "corner4 y",
-                ],
+                columns=columns,
             )
             self.logger.info(f"Detections saved to path: {path}")
 
