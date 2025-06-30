@@ -6,6 +6,9 @@
 conf.json
 log.txt
 
+# Personal directories
+bjorn/
+
 .vs
 .vscode
 .idea
