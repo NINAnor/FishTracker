@@ -773,7 +773,7 @@ class FishManager(QtCore.QAbstractTableModel):
             rows = self.getSaveLines()
             rows.sort(key=lambda entry: (int(entry[0]), int(entry[1])))
             if rows:
-                df = pd.DataFrame(rows)
+                df = pd.DataFrame(rows, columns=columns)
             else:
                 df = pd.DataFrame(columns=columns)
 
