@@ -182,7 +182,9 @@ class Detector(QtCore.QObject):
                 polar_transform = self.getPolarTransform()
 
                 # Get frame timestamp for this frame
-                frame_pc_time = self.getFramePCTime(ind)
+                frame_pc_time = self.getFramePCTime(ind) # getframepctime gets the time of first frame
+                frame_pc_time = datetime.datetime.fromtimestamp(frame_pc_time * 1e-6, 
+                                                                tz=datetime.timezone.utc)
 
                 for label in np.unique(labels):
                     foo = data[labels == label]
@@ -197,9 +199,16 @@ class Detector(QtCore.QObject):
                         ),
                         polar_transform,
                     )
-                    # Set the PC time for this detection
-                    dt = datetime.datetime.utcfromtimestamp(frame_pc_time / 1_000_000)
-                    d.frame_pc_time = dt
+                    fps = self.getFrameRate()
+                    if fps is not None and frame_pc_time is not None:
+                        current_time_since_start = ind * 1/fps
+                        time = frame_pc_time + datetime.timedelta(
+                            seconds=current_time_since_start
+                        )
+                    else:
+                        time = None
+
+                    d.frame_pc_time = time
                     detections.append(d)
 
                 if get_images:
@@ -379,15 +388,6 @@ class Detector(QtCore.QObject):
                 for d in dets:
                     if d.corners is None:
                         continue
-                    fps = self.getFrameRate()
-                    frame_pc_time = d.frame_pc_time
-                    if fps is not None and frame_pc_time is not None:
-                        current_time_since_start = frame * fps
-                        time = frame_pc_time + datetime.timedelta(
-                            seconds=current_time_since_start
-                        )
-                    else:
-                        time = None
 
                     row = {
                         "frame": frame,
@@ -395,8 +395,8 @@ class Detector(QtCore.QObject):
                         "distance": d.distance,
                         "angle": d.angle,
                         "aspect": d.aspect,
-                        "l2ratio": d.l2a_ratio,
-                        "time": time,
+                        "l2aratio": d.l2a_ratio,
+                        "time": d.frame_pc_time,
                     }
                     # Add corners as separate columns
                     for i, (cy, cx) in enumerate(d.corners[0:4], 1):
@@ -411,7 +411,7 @@ class Detector(QtCore.QObject):
                 "distance",
                 "angle",
                 "aspect",
-                "l2ratio",
+                "l2aratio",
                 "time",
                 "corner1 x",
                 "corner1 y",
