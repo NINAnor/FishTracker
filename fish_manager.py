@@ -758,6 +758,8 @@ class FishManager(QtCore.QAbstractTableModel):
                 "distance",
                 "angle",
                 "aspect",
+                "l2a_ratio",
+                "time",
                 "direction",
                 "corner1 x",
                 "corner1 y",
@@ -788,7 +790,7 @@ class FishManager(QtCore.QAbstractTableModel):
         Iterates through all the fish and returns a list containing the fish objects,
         frames the fish appear in, and the following information:
 
-        ID, Frame, Length, Angle, Aspect, Direction, Corner coordinates and wether the
+        ID, Frame, Length, Angle, Aspect, l2aratio, time, Direction, Corner coordinates and wether the
         values are from a detection or a track.
 
         Detection information are preferred over tracks.
@@ -806,6 +808,8 @@ class FishManager(QtCore.QAbstractTableModel):
                     distance = detection.distance
                     angle = detection.angle
                     aspect = detection.aspect
+                    l2a_ratio = detection.l2a_ratio
+                    time = detection.frame_pc_time
                     direction = fish.direction.name
                     corners = (
                         detection.corners
@@ -824,6 +828,8 @@ class FishManager(QtCore.QAbstractTableModel):
                     )
                     angle = float(angle / np.pi * 180 + 90)
                     aspect = np.nan
+                    l2a_ratio = np.nan
+                    time = np.nan
                     direction = fish.direction.name
                     corners = [
                         [track[0], track[1]],
@@ -849,6 +855,8 @@ class FishManager(QtCore.QAbstractTableModel):
                     f1.format(aspect)
                     if aspect is not None and not pd.isna(aspect)
                     else "",
+                    l2a_ratio,
+                    time,
                     direction,
                     *flat_corners,
                     detection_flag,
