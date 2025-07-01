@@ -425,7 +425,7 @@ class Detector(QtCore.QObject):
 
             # if rows is empty, create empty DataFrame with defined columns
             if rows:
-                df = pd.DataFrame(rows)
+                df = pd.DataFrame(rows, columns=columns)
             else:
                 df = pd.DataFrame(columns=columns)
 
