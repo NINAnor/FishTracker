@@ -790,8 +790,8 @@ class FishManager(QtCore.QAbstractTableModel):
         Iterates through all the fish and returns a list containing the fish objects,
         frames the fish appear in, and the following information:
 
-        ID, Frame, Length, Angle, Aspect, l2aratio, time, Direction, Corner coordinates and wether the
-        values are from a detection or a track.
+        ID, Frame, Length, Angle, Aspect, l2aratio, time, Direction, Corner coordinates
+        and whether the values are from a detection or a track.
 
         Detection information are preferred over tracks.
         """

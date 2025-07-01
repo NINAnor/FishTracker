@@ -182,9 +182,12 @@ class Detector(QtCore.QObject):
                 polar_transform = self.getPolarTransform()
 
                 # Get frame timestamp for this frame
-                frame_pc_time = self.getFramePCTime(ind) # getframepctime gets the time of first frame
-                frame_pc_time = datetime.datetime.fromtimestamp(frame_pc_time * 1e-6, 
-                                                                tz=datetime.timezone.utc)
+                frame_pc_time = self.getFramePCTime(
+                    ind
+                )  # getframepctime gets the time of first frame
+                frame_pc_time = datetime.datetime.fromtimestamp(
+                    frame_pc_time * 1e-6, tz=datetime.UTC
+                )
 
                 for label in np.unique(labels):
                     foo = data[labels == label]
@@ -201,7 +204,7 @@ class Detector(QtCore.QObject):
                     )
                     fps = self.getFrameRate()
                     if fps is not None and frame_pc_time is not None:
-                        current_time_since_start = ind * 1/fps
+                        current_time_since_start = ind * 1 / fps
                         time = frame_pc_time + datetime.timedelta(
                             seconds=current_time_since_start
                         )
