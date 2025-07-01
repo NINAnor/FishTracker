@@ -72,6 +72,7 @@ class BatchTrack(QtCore.QObject):
         save_detections=None,
         save_tracks=None,
         save_complete=None,
+        flow_direction="left-to-right",
     ):
         super().__init__()
         self.logger = logging.getLogger(__name__)
@@ -84,6 +85,7 @@ class BatchTrack(QtCore.QObject):
         self.secondary_track = secondary_track
         self.params_detector = params_detector
         self.params_tracker = params_tracker
+        self.flow_direction = flow_direction
 
         if save_detections is None:
             self.logger.info("Using save_detections from conf.json.")
@@ -199,6 +201,7 @@ class BatchTrack(QtCore.QObject):
             save_tracks=self.save_tracks,
             save_complete=self.save_complete,
             as_binary=self.as_binary,
+            flow_direction=self.flow_direction,
         )
 
         proc = mp.Process(
@@ -340,6 +343,7 @@ def main(cfg: DictConfig) -> None:
         save_detections=cfg.output.save_detections,
         save_tracks=cfg.output.save_tracks,
         save_complete=cfg.output.save_fish,
+        flow_direction=cfg.input.flow_direction,
     )
 
     time.sleep(0.1)

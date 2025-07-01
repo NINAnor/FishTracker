@@ -113,6 +113,9 @@ class TrackProcessInfo:
     # Save results as a binary file
     as_binary: bool = True
 
+    # Flow direction setting
+    flow_direction: str = "left-to-right"
+
 
 class TrackProcess(QtCore.QObject):
     """
@@ -160,6 +163,13 @@ class TrackProcess(QtCore.QObject):
         self.setParametersFromDict(info.params_detector_dict, info.params_tracker_dict)
 
         self.fish_manager = FishManager(self.playback_manager, self.tracker)
+
+        # Set flow direction based on configuration
+        if info.flow_direction == "right-to-left":
+            self.fish_manager.setUpDownInversion(True)
+        else:  # default to left-to-right
+            self.fish_manager.setUpDownInversion(False)
+
         self.save_manager = SaveManager(
             self.playback_manager, self.detector, self.tracker, self.fish_manager
         )

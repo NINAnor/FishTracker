@@ -1,6 +1,7 @@
 # Default configuration for FishTracker batch processing
 
 input:
+  flow_direction: left-to-right # Options: left-to-right, right-to-left
   file_paths:
     - <path/to/file_1.aris>
     - <path/to/file_2.aris>
