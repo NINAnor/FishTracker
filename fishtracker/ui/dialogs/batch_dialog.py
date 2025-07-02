@@ -22,13 +22,13 @@ import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-import fishtracker.utils.file_handler as fh
-import fishtracker.ui.icons.iconsLauncher as uiIcons
 import fishtracker.core.processing.track_process as tp
+import fishtracker.ui.icons.iconsLauncher as uiIcons
+import fishtracker.utils.file_handler as fh
 from fishtracker.core.processing.batch_track import BatchTrack
+from fishtracker.managers.playback_manager import PlaybackManager
 from fishtracker.ui.widgets.collapsible_box import CollapsibleBox
 from fishtracker.utils.log_object import LogObject
-from fishtracker.managers.playback_manager import PlaybackManager
 
 
 def setupCheckbox(label, tooltip, layout, key):

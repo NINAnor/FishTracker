@@ -22,8 +22,8 @@ from math import floor
 import cv2
 from PyQt5 import QtCore
 
-from fishtracker.utils.log_object import LogObject
 from fishtracker.parameters.mog_parameters import MOGParameters
+from fishtracker.utils.log_object import LogObject
 
 
 class BackgroundSubtractor(QtCore.QObject):

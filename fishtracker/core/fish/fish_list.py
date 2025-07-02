@@ -19,9 +19,9 @@ along with Fish Tracker.  If not, see <https://www.gnu.org/licenses/>.
 
 from PyQt5 import QtCore, QtWidgets
 
-from fishtracker.ui.widgets.collapsible_box import CollapsibleBox
-from fishtracker.ui.views.detector_parameters_view import LabeledSlider
 from fishtracker.ui.delegates.dropdown_delegate import DropdownDelegate
+from fishtracker.ui.views.detector_parameters_view import LabeledSlider
+from fishtracker.ui.widgets.collapsible_box import CollapsibleBox
 
 # UI element for viewing and editing the tracked fish.
 # Tracked fish are stored and managed by fish_manager.py.
@@ -322,8 +322,8 @@ if __name__ == "__main__":
 
     from fishtracker.core.detection.detector import Detector
     from fishtracker.core.fish.fish_manager import FishManager
-    from fishtracker.managers.playback_manager import PlaybackManager
     from fishtracker.core.tracking.tracker import Tracker
+    from fishtracker.managers.playback_manager import PlaybackManager
 
     def uiTest():
         app = QtWidgets.QApplication(sys.argv)

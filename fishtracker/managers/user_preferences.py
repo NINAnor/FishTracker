@@ -22,10 +22,10 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 import fishtracker.utils.file_handler as fh
-from fishtracker.ui.dialogs.batch_dialog import batchSaveOptions, setupCheckbox
-from fishtracker.ui.widgets.collapsible_box import CollapsibleBox
-from fishtracker.ui.views.detector_parameters_view import LabeledSlider
 from fishtracker.managers.playback_manager import PlaybackManager
+from fishtracker.ui.dialogs.batch_dialog import batchSaveOptions, setupCheckbox
+from fishtracker.ui.views.detector_parameters_view import LabeledSlider
+from fishtracker.ui.widgets.collapsible_box import CollapsibleBox
 
 
 def setupSlider(label, tooltip, layout, key, min_v, max_v):

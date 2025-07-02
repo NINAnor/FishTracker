@@ -25,9 +25,9 @@ from PyQt5.QtWidgets import *
 
 from fishtracker.core.detection.detector import Detector
 from fishtracker.parameters.detector_parameters import DetectorParameters
+from fishtracker.parameters.mog_parameters import MOGParameters
 from fishtracker.utils.file_handler import checkAppDataPath, getFilePathInAppData
 from fishtracker.utils.log_object import LogObject
-from fishtracker.parameters.mog_parameters import MOGParameters
 
 PARAMETERS_PATH = getFilePathInAppData("detector_parameters.json")
 parameters_lock = QReadWriteLock()
@@ -478,8 +478,8 @@ class DetectorParametersView(QWidget):
 if __name__ == "__main__":
     import sys
 
-    from fishtracker.utils.image_manipulation import ImageProcessor
     from fishtracker.managers.playback_manager import PlaybackManager
+    from fishtracker.utils.image_manipulation import ImageProcessor
 
     app = QApplication(sys.argv)
     main_window = QMainWindow()

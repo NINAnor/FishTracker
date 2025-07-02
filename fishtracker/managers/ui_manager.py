@@ -22,24 +22,24 @@ import sys
 from PyQt5 import QtCore, QtWidgets
 
 import fishtracker.utils.file_handler as fh
-from fishtracker.ui.dialogs.batch_dialog import BatchDialog
-from fishtracker.ui.widgets.detection_list import DetectionDataModel, DetectionList
 from fishtracker.core.detection.detector import Detector
-from fishtracker.ui.views.detector_parameters_view import DetectorParametersView
-from fishtracker.ui.widgets.echogram_widget import EchogramViewer
 from fishtracker.core.fish.fish_list import FishList
 from fishtracker.core.fish.fish_manager import FishManager
-from fishtracker.utils.log_object import LogObject
-from fishtracker.ui.main_window import MainWindow
-from fishtracker.ui.widgets.output_widget import LogToFile, OutputViewer
-from fishtracker.parameters.parameter_list import ParameterList
-from fishtracker.managers.playback_manager import PlaybackManager
-from fishtracker.utils.save_manager import SaveManager
-from fishtracker.ui.views.sonar_view3 import Ui_MainWindow
-from fishtracker.ui.widgets.sonar_widget import SonarViewer
 from fishtracker.core.tracking.tracker import Tracker
-from fishtracker.ui.views.tracker_parameters_view import TrackerParametersView
+from fishtracker.managers.playback_manager import PlaybackManager
 from fishtracker.managers.user_preferences import UserPreferencesDialog
+from fishtracker.parameters.parameter_list import ParameterList
+from fishtracker.ui.dialogs.batch_dialog import BatchDialog
+from fishtracker.ui.main_window import MainWindow
+from fishtracker.ui.views.detector_parameters_view import DetectorParametersView
+from fishtracker.ui.views.sonar_view3 import Ui_MainWindow
+from fishtracker.ui.views.tracker_parameters_view import TrackerParametersView
+from fishtracker.ui.widgets.detection_list import DetectionDataModel, DetectionList
+from fishtracker.ui.widgets.echogram_widget import EchogramViewer
+from fishtracker.ui.widgets.output_widget import LogToFile, OutputViewer
+from fishtracker.ui.widgets.sonar_widget import SonarViewer
+from fishtracker.utils.log_object import LogObject
+from fishtracker.utils.save_manager import SaveManager
 
 
 class UIManager:

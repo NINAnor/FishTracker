@@ -34,11 +34,12 @@ import seaborn as sns
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QPointF
 
+import fishtracker.ui.icons.iconsLauncher as uiIcons  # UI/iconsLauncher
+
 # uif : (u)ser (i)nterface (f)unction
 ## library for reading SONAR files
 # FH: File Handler
 import fishtracker.utils.file_handler as FH
-import fishtracker.ui.icons.iconsLauncher as uiIcons  # UI/iconsLauncher
 from fishtracker.core.detection.detector import Detector
 from fishtracker.core.fish.fish_manager import (
     FishEntry,
@@ -46,12 +47,12 @@ from fishtracker.core.fish.fish_manager import (
     color_palette_deep,
     pyqt_palette,
 )
+from fishtracker.core.tracking.tracker import Tracker
+from fishtracker.managers.playback_manager import Event
+from fishtracker.ui.main_window import MainWindow
+from fishtracker.ui.widgets.zoomable_qlabel import ZoomableQLabel
 from fishtracker.utils.image_manipulation import ImageProcessor
 from fishtracker.utils.log_object import LogObject
-from fishtracker.ui.main_window import MainWindow
-from fishtracker.managers.playback_manager import Event
-from fishtracker.core.tracking.tracker import Tracker
-from fishtracker.ui.widgets.zoomable_qlabel import ZoomableQLabel
 
 
 class SonarViewer(QtWidgets.QDialog):

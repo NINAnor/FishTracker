@@ -32,9 +32,9 @@ from PyQt5 import QtCore, QtWidgets
 from tqdm import tqdm
 
 from fishtracker.core.detection.background_subtractor import BackgroundSubtractor
+from fishtracker.managers.playback_manager import PlaybackManager, TestFigure
 from fishtracker.parameters.detector_parameters import DetectorParameters
 from fishtracker.parameters.mog_parameters import MOGParameters
-from fishtracker.managers.playback_manager import PlaybackManager, TestFigure
 
 
 def nothing(x):

@@ -22,8 +22,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from fishtracker.core.detection.background_subtractor import BackgroundSubtractor
 from fishtracker.core.fish.fish_manager import FishEntry, pyqt_palette
-from fishtracker.utils.log_object import LogObject
 from fishtracker.ui.widgets.zoomable_qlabel import DebugZQLabel, ZoomableQLabel
+from fishtracker.utils.log_object import LogObject
 
 
 class EchoFigure(ZoomableQLabel):

@@ -2,6 +2,7 @@ from pathlib import Path
 
 iconsDir = Path(__file__).parent / "icons_img"
 
+
 def FGetIcon(name, iconsDir=iconsDir, theme="black", resolution=256, OS="linux"):
     """function used to get path of icons based on each OS.
     and the give the path of the icon to the caller function.

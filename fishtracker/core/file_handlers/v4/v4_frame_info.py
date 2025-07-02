@@ -14,8 +14,8 @@ References:
 
 import datetime
 import json
-import os
 import struct
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -24,7 +24,7 @@ from skimage.transform import warp
 
 import fishtracker.core.file_handlers.beamLookUp as bl
 import fishtracker.core.file_handlers.utils as utils
-from pathlib import Path
+
 JSON_FILE_PATH = Path(__file__).parent / "v4_frame_headers_info.json"
 
 

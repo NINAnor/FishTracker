@@ -23,13 +23,13 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from fishtracker.ui.widgets.collapsible_box import CollapsibleBox
-from fishtracker.ui.views.detector_parameters_view import LabeledSlider
-from fishtracker.utils.file_handler import checkAppDataPath, getFilePathInAppData
-from fishtracker.parameters.filter_parameters import FilterParameters
-from fishtracker.utils.log_object import LogObject
 from fishtracker.core.tracking.tracker import Tracker, TrackingState
+from fishtracker.parameters.filter_parameters import FilterParameters
 from fishtracker.parameters.tracker_parameters import TrackerParameters
+from fishtracker.ui.views.detector_parameters_view import LabeledSlider
+from fishtracker.ui.widgets.collapsible_box import CollapsibleBox
+from fishtracker.utils.file_handler import checkAppDataPath, getFilePathInAppData
+from fishtracker.utils.log_object import LogObject
 
 PARAMETERS_PATH = getFilePathInAppData("tracker_parameters.json")
 parameters_lock = QReadWriteLock()

@@ -28,9 +28,9 @@ from PyQt5 import QtCore, QtWidgets
 import fishtracker.utils.file_handler as fh
 from fishtracker.core.detection.detector import Detector
 from fishtracker.core.fish.fish_manager import FishManager
-from fishtracker.utils.log_object import LogObject
-from fishtracker.managers.playback_manager import PlaybackManager
 from fishtracker.core.tracking.tracker import Tracker
+from fishtracker.managers.playback_manager import PlaybackManager
+from fishtracker.utils.log_object import LogObject
 
 # File format as follows:
 # {

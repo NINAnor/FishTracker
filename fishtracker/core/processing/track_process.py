@@ -31,9 +31,9 @@ from PyQt5 import QtCore, QtWidgets
 import fishtracker.utils.file_handler as fh
 from fishtracker.core.detection.detector import Detector, DetectorParameters
 from fishtracker.core.fish.fish_manager import FishManager
+from fishtracker.core.tracking.tracker import Tracker, TrackingState
 from fishtracker.managers.playback_manager import PlaybackManager, TestFigure
 from fishtracker.utils.save_manager import SaveManager
-from fishtracker.core.tracking.tracker import Tracker, TrackingState
 
 
 def getDefaultParser(getArgs=False):

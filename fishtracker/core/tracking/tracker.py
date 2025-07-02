@@ -26,8 +26,8 @@ import seaborn as sns
 from PyQt5 import QtCore
 from tqdm import tqdm
 
-from fishtracker.parameters.filter_parameters import FilterParameters
 from fishtracker.core.processing.sort import KalmanBoxTracker, Sort
+from fishtracker.parameters.filter_parameters import FilterParameters
 from fishtracker.parameters.tracker_parameters import TrackerParameters
 
 
