@@ -23,7 +23,7 @@ To run the `batch_track.py` script copy the `configs/example.default.yaml` and r
 If you want to run the `batch_track.py` script from the command line, you can do so by using the following command:
 
 ```bash
-uv run batch_track.py --input.file_paths="[file1.aris,file2.aris]" --output.directory="/my/custom/output/path"
+uv run batch_track_cli.py --input.file_paths="[file1.aris,file2.aris]" --output.directory="/my/custom/output/path"
 ```
 
 This command will process the input file and save the results to the output file. The input file should be a sonar video file, and the output file will contain the detection, tracking results and the .fish files. Keep in mind that these parameters will override the default values set in the `configs/default.yaml` file.
