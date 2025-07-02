@@ -24,9 +24,8 @@ from skimage.transform import warp
 
 import fishtracker.core.file_handlers.beamLookUp as bl
 import fishtracker.core.file_handlers.utils as utils
-
-cwd = os.getcwd()
-JSON_FILE_PATH = cwd + "/file_handlers/v4/v4_frame_headers_info.json"
+from pathlib import Path
+JSON_FILE_PATH = Path(__file__).parent / "v4_frame_headers_info.json"
 
 
 class v4_Frame:

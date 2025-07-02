@@ -16,6 +16,7 @@ import json
 import os
 import re
 import struct
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -24,8 +25,7 @@ import fishtracker.core.file_handlers.beamLookUp as beamLookUp
 import fishtracker.core.file_handlers.utils as utils
 import fishtracker.core.file_handlers.v3.v3_frame_info as frame
 
-cwd = os.getcwd()
-JSON_FILE_PATH = cwd + "/file_handlers/v3/v3_file_headers_info.json"
+JSON_FILE_PATH = Path(__file__).parent / "v3_file_headers_info.json"
 
 
 class v3_File:

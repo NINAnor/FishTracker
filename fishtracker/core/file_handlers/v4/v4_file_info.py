@@ -16,12 +16,12 @@ import json
 import os
 import re
 import struct
+from pathlib import Path
 
 import fishtracker.core.file_handlers.utils as utils
 import fishtracker.core.file_handlers.v4.v4_frame_info as frame
 
-cwd = os.getcwd()
-JSON_FILE_PATH = cwd + "/file_handlers/v4/v4_file_headers_info.json"
+JSON_FILE_PATH = Path(__file__).parent / "v4_file_headers_info.json"
 
 
 class v4_File:

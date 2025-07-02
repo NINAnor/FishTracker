@@ -12,60 +12,27 @@ References:
 """
 
 import json
-import os
 import struct
+from pathlib import Path
 
-CWD = os.getcwd()
+# Get the directory of this file
+BASE_DIR = Path(__file__).parent
 
-# {CWD}/file_handlers/v0/v0_frame_headers_info.json
-# {CWD}/file_handlers/v1/v1_frame_headers_info.json
-# {CWD}/file_handlers/v2/v2_frame_headers_info.json
-# {CWD}/file_handlers/v3/v3_frame_headers_info.json
-# {CWD}/file_handlers/v4/v4_frame_headers_info.json
-# {CWD}/file_handlers/v5/v5_frame_headers_info.json
-v0_FrameHeaderJSON = os.path.join(
-    CWD, "file_handlers", "v0", "v0_frame_headers_info.json"
-)
-v1_FrameHeaderJSON = os.path.join(
-    CWD, "file_handlers", "v1", "v1_frame_headers_info.json"
-)
-v2_FrameHeaderJSON = os.path.join(
-    CWD, "file_handlers", "v2", "v2_frame_headers_info.json"
-)
-v3_FrameHeaderJSON = os.path.join(
-    CWD, "file_handlers", "v3", "v3_frame_headers_info.json"
-)
-v4_FrameHeaderJSON = os.path.join(
-    CWD, "file_handlers", "v4", "v4_frame_headers_info.json"
-)
-v5_FrameHeaderJSON = os.path.join(
-    CWD, "file_handlers", "v5", "v5_frame_headers_info.json"
-)
+# Frame header JSON paths
+v0_FrameHeaderJSON = str(BASE_DIR / "v0" / "v0_frame_headers_info.json")
+v1_FrameHeaderJSON = str(BASE_DIR / "v1" / "v1_frame_headers_info.json")
+v2_FrameHeaderJSON = str(BASE_DIR / "v2" / "v2_frame_headers_info.json")
+v3_FrameHeaderJSON = str(BASE_DIR / "v3" / "v3_frame_headers_info.json")
+v4_FrameHeaderJSON = str(BASE_DIR / "v4" / "v4_frame_headers_info.json")
+v5_FrameHeaderJSON = str(BASE_DIR / "v5" / "v5_frame_headers_info.json")
 
-# {CWD}/file_handlers/v0/v0_file_headers_info.json
-# {CWD}/file_handlers/v1/v1_file_headers_info.json
-# {CWD}/file_handlers/v2/v2_file_headers_info.json
-# {CWD}/file_handlers/v3/v3_file_headers_info.json
-# {CWD}/file_handlers/v4/v4_file_headers_info.json
-# {CWD}/file_handlers/v5/v5_file_headers_info.json
-v0_FileHeaderJSON = os.path.join(
-    CWD, "file_handlers", "v0", "v0_file_headers_info.json"
-)
-v1_FileHeaderJSON = os.path.join(
-    CWD, "file_handlers", "v1", "v1_file_headers_info.json"
-)
-v2_FileHeaderJSON = os.path.join(
-    CWD, "file_handlers", "v2", "v2_file_headers_info.json"
-)
-v3_FileHeaderJSON = os.path.join(
-    CWD, "file_handlers", "v3", "v3_file_headers_info.json"
-)
-v4_FileHeaderJSON = os.path.join(
-    CWD, "file_handlers", "v4", "v4_file_headers_info.json"
-)
-v5_FileHeaderJSON = os.path.join(
-    CWD, "file_handlers", "v5", "v5_file_headers_info.json"
-)
+# File header JSON paths
+v0_FileHeaderJSON = str(BASE_DIR / "v0" / "v0_file_headers_info.json")
+v1_FileHeaderJSON = str(BASE_DIR / "v1" / "v1_file_headers_info.json")
+v2_FileHeaderJSON = str(BASE_DIR / "v2" / "v2_file_headers_info.json")
+v3_FileHeaderJSON = str(BASE_DIR / "v3" / "v3_file_headers_info.json")
+v4_FileHeaderJSON = str(BASE_DIR / "v4" / "v4_file_headers_info.json")
+v5_FileHeaderJSON = str(BASE_DIR / "v5" / "v5_file_headers_info.json")
 
 
 def getFrameHeaderValue(version, attributes):
