@@ -17,11 +17,32 @@ You should have received a copy of the GNU General Public License
 along with Fish Tracker.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import multiprocessing
+from dataclasses import dataclass
+from enum import Enum, auto
 
-from fishtracker.managers.ui_manager import launch_ui
+from fishtracker.parameters.parameters_base import ParametersBase
 
-if __name__ == "__main__":
-    # Freezing is required by PyInstaller
-    multiprocessing.freeze_support()
-    launch_ui()
+
+class TrackerParameters(ParametersBase):
+    @dataclass
+    class Parameters:
+        max_age: int = 10
+        min_hits: int = 5
+        search_radius: int = 10
+        trim_tails: bool = True
+
+    class ParametersEnum(Enum):
+        max_age = auto()
+        min_hits = auto()
+        search_radius = auto()
+        trim_tails = auto()
+
+    def __init__(self, *args, **kwargs):
+        """
+        Parameters:
+        max_age: int = 10
+        min_hits: int = 5
+        search_radius: int = 10
+        trim_tails: bool = True
+        """
+        super().__init__(self.Parameters(*args, **kwargs))
