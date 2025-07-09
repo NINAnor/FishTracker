@@ -33,6 +33,7 @@ from fishtracker.core.detection.detector import Detector, DetectorParameters
 from fishtracker.core.fish.fish_manager import FishManager
 from fishtracker.core.tracking.tracker import Tracker, TrackingState
 from fishtracker.managers.playback_manager import PlaybackManager, TestFigure
+from fishtracker.parameters.filter_parameters import FilterParameters
 from fishtracker.utils.save_manager import SaveManager
 
 
@@ -116,6 +117,9 @@ class TrackProcessInfo:
     # Flow direction setting
     flow_direction: str = "left-to-right"
 
+    # Export all tracks or apply filtering thresholds
+    export_all_tracks: bool = False
+
 
 class TrackProcess(QtCore.QObject):
     """
@@ -148,6 +152,8 @@ class TrackProcess(QtCore.QObject):
         self.save_complete = info.save_complete
         self.binary = info.as_binary
 
+        self.logger = logging.getLogger(__name__)
+
         if info.display:
             self.main_window = QtWidgets.QMainWindow()
         else:
@@ -169,6 +175,22 @@ class TrackProcess(QtCore.QObject):
             self.fish_manager.setUpDownInversion(True)
         else:  # default to left-to-right
             self.fish_manager.setUpDownInversion(False)
+
+        # Apply filter parameters from tracker configuration if not exporting all tracks
+        if not info.export_all_tracks:
+            filter_params = self.tracker.filter_parameters
+            min_duration = filter_params.getParameter(
+                FilterParameters.ParametersEnum.min_duration
+            )
+            mad_limit = filter_params.getParameter(
+                FilterParameters.ParametersEnum.mad_limit
+            )
+            self.fish_manager.setMinDetections(min_duration)
+            self.fish_manager.setMAD(mad_limit)
+            self.logger.info(
+                f"Applied filter parameters - min_duration: {min_duration}, "
+                f"mad_limit: {mad_limit}"
+            )
 
         self.save_manager = SaveManager(
             self.playback_manager, self.detector, self.tracker, self.fish_manager

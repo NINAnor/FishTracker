@@ -74,6 +74,7 @@ class BatchTrack(QtCore.QObject):
         save_tracks=None,
         save_complete=None,
         flow_direction="left-to-right",
+        export_all_tracks=False,
     ):
         super().__init__()
         self.logger = logging.getLogger(__name__)
@@ -87,6 +88,7 @@ class BatchTrack(QtCore.QObject):
         self.params_detector = params_detector
         self.params_tracker = params_tracker
         self.flow_direction = flow_direction
+        self.export_all_tracks = export_all_tracks
 
         if save_detections is None:
             self.logger.info("Using save_detections from conf.json.")
@@ -203,6 +205,7 @@ class BatchTrack(QtCore.QObject):
             save_complete=self.save_complete,
             as_binary=self.as_binary,
             flow_direction=self.flow_direction,
+            export_all_tracks=self.export_all_tracks,
         )
 
         proc = mp.Process(

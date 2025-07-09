@@ -66,6 +66,7 @@ def main(cfg: DictConfig) -> None:
         save_tracks=cfg.output.save_tracks,
         save_complete=cfg.output.save_fish,
         flow_direction=cfg.input.flow_direction,
+        export_all_tracks=cfg.output.get("export_all_tracks", False),
     )
 
     time.sleep(0.1)
