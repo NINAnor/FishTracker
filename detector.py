@@ -393,7 +393,7 @@ class Detector(QtCore.QObject):
                         continue
 
                     row = {
-                        "frame": frame,
+                        "frame": frame + 1,  # convert to 1-indexed to match UI display
                         "length": d.length,
                         "distance": d.distance,
                         "angle": d.angle,
@@ -458,9 +458,10 @@ class Detector(QtCore.QObject):
 
                 for line in file:
                     split_line = line.split(";")
-                    frame = int(split_line[0])
+                    # Convert from 1-indexed to 0-indexed
+                    frame = int(split_line[0]) - 1
 
-                    if frame >= nof_frames:
+                    if frame >= nof_frames or frame < 0:
                         ignored_dets += 1
                         continue
 
