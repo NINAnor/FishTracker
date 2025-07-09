@@ -80,10 +80,21 @@ from tracker import Tracker
 #     },
 #     "fish":
 #     {
-#         track_id_1:
-#             [[frame_1, detection_label_0,[min_x, max_x, min_y, max_y]],
-#             [frame_2, detection_label_1, [min_x, max_x, min_y, max_y]]],
-#         track_id_2: [[frame_2, detection_label_2, [min_x, max_x, min_y, max_y]]]
+#         track_id_1: {
+#             "tracks": [
+#                 [frame_1, detection_label_0, [min_x, max_x, min_y, max_y]],
+#                 [frame_2, detection_label_1, [min_x, max_x, min_y, max_y]]
+#             ],
+#             "length": 1.234,
+#             "length_overwritten": false
+#         },
+#         track_id_2: {
+#             "tracks": [
+#                 [frame_2, detection_label_2, [min_x, max_x, min_y, max_y]]
+#             ],
+#             "length": 0.987,
+#             "length_overwritten": true
+#         }
 #     }
 # }
 
