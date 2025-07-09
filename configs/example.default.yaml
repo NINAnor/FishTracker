@@ -13,6 +13,7 @@ output:
   save_fish: True
   save_detections: True
   save_tracks: True
+  export_all_tracks: False  # if True, export all tracks regardless of filters.
 
 batch_processing:
   parallel: 1

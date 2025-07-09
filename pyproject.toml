@@ -27,7 +27,8 @@ dependencies = [
   "tqdm",
   "hydra-core",
   "omegaconf",
-  "pandas"
+  "pandas",
+  "pytest",
 ]
 description = ""
 license = {text = "GPL-3.0+"}
