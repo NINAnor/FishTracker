@@ -848,7 +848,7 @@ class FishManager(QtCore.QAbstractTableModel):
                         flat_corners.extend(["", ""])
                 row = [
                     fish.id,
-                    frame,
+                    frame + 1,  # convert to 1-indexed to match UI display
                     f1.format(length),
                     f1.format(distance),
                     f1.format(angle),
@@ -881,7 +881,8 @@ class FishManager(QtCore.QAbstractTableModel):
                 for line in file:
                     split_line = line.split(";")
                     id = int(split_line[0])
-                    frame = int(split_line[1])
+                    # Convert from 1-indexed to 0-indexed
+                    frame = int(split_line[1]) - 1
                     length = float(split_line[2])
                     aspect = float(split_line[5])
                     direction = SwimDirection[split_line[6]]
