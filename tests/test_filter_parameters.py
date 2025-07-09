@@ -10,6 +10,12 @@ from fishtracker.parameters.detector_parameters import DetectorParameters
 from fishtracker.parameters.filter_parameters import FilterParameters
 
 
+def verify_condition(condition, message):
+    """Helper function to verify conditions without using assert."""
+    if not condition:
+        raise ValueError(f"Test failed: {message}")
+
+
 def test_filter_parameters():
     """Test that filter parameters are properly applied in batch processing."""
 
@@ -49,18 +55,41 @@ def test_filter_parameters():
             export_all_tracks=False,
         )
 
-        assert batch_track_all.export_all_tracks is True
-        assert batch_track_filtered.export_all_tracks is False
+        # verify export_all_tracks settings
+        verify_condition(
+            batch_track_all.export_all_tracks is True,
+            "batch_track_all.export_all_tracks should be True",
+        )
 
-        assert (
-            batch_track_all.tracker_params.filter.getParameter(
-                FilterParameters.ParametersEnum.min_duration
-            )
-            == 5
+        verify_condition(
+            batch_track_filtered.export_all_tracks is False,
+            "batch_track_filtered.export_all_tracks should be False",
         )
-        assert (
-            batch_track_all.tracker_params.filter.getParameter(
-                FilterParameters.ParametersEnum.mad_limit
-            )
-            == 10
+
+        # verify filter parameters
+        min_duration_value = batch_track_all.tracker_params.filter.getParameter(
+            FilterParameters.ParametersEnum.min_duration
         )
+        verify_condition(
+            min_duration_value == 5,
+            f"min_duration should be 5, but got {min_duration_value}",
+        )
+
+        mad_limit_value = batch_track_all.tracker_params.filter.getParameter(
+            FilterParameters.ParametersEnum.mad_limit
+        )
+        verify_condition(
+            mad_limit_value == 10, f"mad_limit should be 10, but got {mad_limit_value}"
+        )
+
+        print("All filter parameter tests passed successfully!")
+        return True
+
+
+if __name__ == "__main__":
+    try:
+        test_filter_parameters()
+        print("Test completed successfully!")
+    except Exception as e:
+        print(f"Test failed with error: {e}")
+        sys.exit(1)
