@@ -930,7 +930,14 @@ class FishManager(QtCore.QAbstractTableModel):
                 for frame, (track, det) in f.tracks.items()
             ]
 
-            fish[str(f.id)] = fish_tracks
+            # include fish metadata including length
+            fish_data = {
+                "tracks": fish_tracks,
+                "length": f.length,
+                "length_overwritten": f.length_overwritten,
+            }
+
+            fish[str(f.id)] = fish_data
 
         return fish
 
@@ -942,7 +949,21 @@ class FishManager(QtCore.QAbstractTableModel):
         for _id, f_data in data.items():
             id = int(_id)
             f = None
-            for frame, det_label, track in f_data:
+
+            # handle both old format (list of tracks) and new format
+            # (dict with tracks and metadata)
+            if isinstance(f_data, list):
+                # Old format - just tracks
+                tracks_data = f_data
+                length = None
+                length_overwritten = False
+            else:
+                # new format - dict with tracks and metadata
+                tracks_data = f_data["tracks"]
+                length = f_data.get("length", None)
+                length_overwritten = f_data.get("length_overwritten", False)
+
+            for frame, det_label, track in tracks_data:
                 if f is None:
                     f = FishEntry(id, frame, frame)
 
@@ -969,6 +990,10 @@ class FishManager(QtCore.QAbstractTableModel):
                     f.addTrack(track, None, frame)
 
             if f is not None:
+                # apply saved length if available
+                if length is not None:
+                    f.length = length
+                    f.length_overwritten = length_overwritten
                 self.all_fish[id] = f
 
         self.refreshAllFishData()
