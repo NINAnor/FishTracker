@@ -165,7 +165,8 @@ class PlaybackManager(QObject):
 
     def setLoadedFile(self, sonar):
         self.sonar = sonar
-        self.fps = sonar.frameRate
+        # ensure fps is valid - fallback to 30 if frameRate is None, 0, or negative
+        self.fps = sonar.frameRate if sonar.frameRate and sonar.frameRate > 0 else 30
 
         # Initialize new PlaybackThread
         self.playback_thread = PlaybackThread(self.path, self.sonar, self.thread_pool)
@@ -271,6 +272,9 @@ class PlaybackManager(QObject):
         Used to start frame_timer, the main pipeline for displaying frames.
         """
         if self.frame_timer is None:
+            # Ensure fps is valid before using it
+            if not self.fps or self.fps <= 0:
+                self.fps = 30  # Fallback to 30 fps
             self.frame_timer = QTimer(self)
             self.frame_timer.timeout.connect(self.displayFrame)
             self.frame_timer.start(int(1000.0 / self.fps))
