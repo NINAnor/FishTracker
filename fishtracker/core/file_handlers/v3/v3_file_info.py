@@ -365,11 +365,11 @@ class v3_File:
         pass
 
 
-def setWindowStart(configFlags, highResolution, cls):
+def setWindowStart(configFlags, cls):
     if (configFlags == 1) or (configFlags == 3):
-        cls.windowStart = cls.windowStart * (0.375 + (highResolution == 0) * 0.375)
+        cls.windowStart = cls.windowStart * (0.375 + (cls.highResolution == 0) * 0.375)
     if (configFlags == 0) or (configFlags == 2):
-        cls.windowStart = cls.windowStart * (0.419 + (highResolution == 0) * 0.419)
+        cls.windowStart = cls.windowStart * (0.419 + (cls.highResolution == 0) * 0.419)
     else:
         raise ValueError("configuration flag has irrelevant value.")
     return
@@ -386,7 +386,7 @@ def setWindowLength(configFlags, index, cls):
     return
 
 
-def setFirstBeamAngle(highResolution, cls):
+def setFirstBeamAngle(cls):
     cls.firstBeamAngle = beamLookUp.BeamLookUp(cls.BEAM_COUNT, 0)[-1]
 
     return
@@ -416,14 +416,28 @@ def v3_getAllFramesData(fhand, version, cls):
         "samplesPerChannel",
         "reverse",
         "frameCount",
+        "frameRate",
         "highResolution",
         "serialNumber",
     ]
-    frameAttributesList = ["configFlags", "windowStart", "windowLengthIndex"]
+    frameAttributesList = [
+        "frameTime",
+        "configFlags",
+        "windowStart",
+        "windowLengthIndex",
+    ]
 
     fileHeader = utils.getFileHeaderValue(version, fileAttributesList)
     frameHeader = utils.getFrameHeaderValue(version, frameAttributesList)
     print("inside v3_getAllFramesData(fhand)")
+
+    #   Reading serial number of the sonar [from file header]
+    fhand.seek(fileHeader["serialNumber"]["location"], 0)
+    cls.serialNumber = struct.unpack(
+        utils.cType[fileHeader["serialNumber"]["size"]],
+        fhand.read(utils.c(fileHeader["serialNumber"]["size"])),
+    )[0]
+
     #   Reading Number of frames in the file [from file header]
     fhand.seek(fileHeader["frameCount"]["location"], 0)
     cls.frameCount = struct.unpack(
@@ -431,10 +445,32 @@ def v3_getAllFramesData(fhand, version, cls):
         fhand.read(utils.c(fileHeader["frameCount"]["size"])),
     )[0]
 
+    #   Reading frame rate [from file header]
+    fhand.seek(fileHeader["frameRate"]["location"], 0)
+    cls.frameRate = struct.unpack(
+        utils.cType[fileHeader["frameRate"]["size"]],
+        fhand.read(utils.c(fileHeader["frameRate"]["size"])),
+    )[0]
+
+    #   Reading frame time [from frame header]
+    fhand.seek(
+        cls.FILE_HEADER_SIZE + fhand.seek(frameHeader["frameTime"]["location"], 0)
+    )
+    cls.frameTime = struct.unpack(
+        utils.cType[frameHeader["frameTime"]["size"]],
+        fhand.read(utils.c(frameHeader["frameTime"]["size"])),
+    )[0]
+
     #   Reading highResolution value to detect whether Hi/Lo frequency
     #   [from file header]
+    # fhand.seek(fileHeader["highResolution"]["location"], 0)
+    # highResolution = struct.unpack(
+    #     utils.cType[fileHeader["highResolution"]["size"]],
+    #     fhand.read(utils.c(fileHeader["highResolution"]["size"])),
+    # )[0]
+
     fhand.seek(fileHeader["highResolution"]["location"], 0)
-    highResolution = struct.unpack(
+    cls.highResolution = struct.unpack(
         utils.cType[fileHeader["highResolution"]["size"]],
         fhand.read(utils.c(fileHeader["highResolution"]["size"])),
     )[0]
@@ -512,11 +548,11 @@ def v3_getAllFramesData(fhand, version, cls):
 
         ## TODO _ : this needs to be completed
 
-    windowLengthIndex = windowLengthIndex + 2 * (highResolution == 0)
+    windowLengthIndex = windowLengthIndex + 2 * (cls.highResolution == 0)
 
     setWindowLength(configFlags, windowLengthIndex, cls)
-    setWindowStart(configFlags, highResolution, cls)
-    setFirstBeamAngle(not highResolution, cls)
+    setWindowStart(configFlags, cls)
+    setFirstBeamAngle(cls)
 
     frameSize = cls.BEAM_COUNT * cls.samplesPerBeam
     frameoffset = cls.FILE_HEADER_SIZE + cls.FRAME_HEADER_SIZE

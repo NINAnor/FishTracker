@@ -261,6 +261,7 @@ class v5_File:
                             headerField + " = " + str(headerFields[headerField])
                         )
                         index = str(data["file"][headerField]["order"])
+
                         orderedSet[index] = headerValue
                     else:
                         continue
@@ -345,7 +346,14 @@ def v5_getAllFramesData(fhand, version, cls):
     ## TODO _
 
     cls.version = "ARIS"
-    fileAttributesList = ["numRawBeams", "samplesPerChannel", "frameCount", "reverse"]
+    fileAttributesList = [
+        "serialNumber",
+        "highResolution",
+        "numRawBeams",
+        "samplesPerChannel",
+        "frameCount",
+        "reverse",
+    ]
     frameAttributesList = [
         "largeLens",
         "sampleStartDelay",
@@ -357,6 +365,14 @@ def v5_getAllFramesData(fhand, version, cls):
 
     fileHeader = utils.getFileHeaderValue(version, fileAttributesList)
     frameHeader = utils.getFrameHeaderValue(version, frameAttributesList)
+
+    #   Reading serial number of the sonar [from file header]
+    fhand.seek(fileHeader["serialNumber"]["location"], 0)
+    cls.serialNumber = struct.unpack(
+        utils.cType[fileHeader["serialNumber"]["size"]],
+        fhand.read(utils.c(fileHeader["serialNumber"]["size"])),
+    )[0]
+
     #   Reading Number of frames in the file [from file header]
     fhand.seek(fileHeader["frameCount"]["location"], 0)
     cls.frameCount = struct.unpack(
@@ -401,6 +417,13 @@ def v5_getAllFramesData(fhand, version, cls):
     cls.frameTime = struct.unpack(
         utils.cType[frameHeader["frameTime"]["size"]],
         fhand.read(utils.c(frameHeader["frameTime"]["size"])),
+    )[0]
+
+    #   Reading high/low reolution [from file header]
+    fhand.seek(fileHeader["highResolution"]["location"], 0)
+    cls.highResolution = struct.unpack(
+        utils.cType[fileHeader["highResolution"]["size"]],
+        fhand.read(utils.c(fileHeader["highResolution"]["size"])),
     )[0]
 
     #   Reading Sample Period [from frame header]
