@@ -418,6 +418,7 @@ def v3_getAllFramesData(fhand, version, cls):
         "frameCount",
         "highResolution",
         "serialNumber",
+        "frameRate",
     ]
     frameAttributesList = ["configFlags", "windowStart", "windowLengthIndex"]
 
@@ -458,6 +459,13 @@ def v3_getAllFramesData(fhand, version, cls):
     cls.reverse = struct.unpack(
         utils.cType[fileHeader["reverse"]["size"]],
         fhand.read(utils.c(fileHeader["reverse"]["size"])),
+    )[0]
+
+    # Reading frame rate [from file header]
+    fhand.seek(fileHeader["frameRate"]["location"], 0)
+    cls.frameRate = struct.unpack(
+        utils.cType[fileHeader["frameRate"]["size"]],
+        fhand.read(utils.c(fileHeader["frameRate"]["size"])),
     )[0]
 
     #   Reading Serial number of file format to decide configuration flags later
