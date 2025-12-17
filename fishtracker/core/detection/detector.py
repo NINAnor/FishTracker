@@ -35,6 +35,7 @@ from fishtracker.core.detection.background_subtractor import BackgroundSubtracto
 from fishtracker.managers.playback_manager import PlaybackManager, TestFigure
 from fishtracker.parameters.detector_parameters import DetectorParameters
 from fishtracker.parameters.mog_parameters import MOGParameters
+from fishtracker.utils.log_object import LogObject
 
 
 def nothing(x):
@@ -233,16 +234,30 @@ class Detector(QtCore.QObject):
             self.initMOG()
             if self.bg_subtractor.parametersDirty():
                 self.logger.info("Stopped before detecting.")
+                LogObject().print("Stopped before detecting.")
                 self.abortComputing(True)
                 return
 
         count = self.image_provider.getFrameCount()
+        progress_interval = max(1, count // 10)
+
         for ind in tqdm(range(count), desc="Detecting", unit="frames"):
             img = self.image_provider.getFrame(ind)
             self.computeBase(ind, img)
 
+            if ind % progress_interval == 0 or ind == count - 1:
+                percentage_complete = (ind / count) * 100 if count > 0 else 0
+                LogObject().print(
+                    f"Detecting... {percentage_complete:.0f}% ({ind}/{count} frames)"
+                )
+
             if self.stop_computing:
+                percentage_complete = (ind / count) * 100 if count > 0 else 0
                 self.logger.info(f"Stopped detecting at {ind}")
+                LogObject().print(
+                    f"Stopped detecting at frame {ind}/{count} "
+                    f"({percentage_complete:.1f}% complete)"
+                )
                 self.abortComputing(False)
                 return
 
@@ -327,6 +342,7 @@ class Detector(QtCore.QObject):
             return [d for d in dets if d.center is not None]
         except IndexError:
             self.logger.error(traceback.format_exc())
+            LogObject().print(f"Error: {traceback.format_exc()}")
 
     def getDetections(self):
         return [
@@ -353,6 +369,7 @@ class Detector(QtCore.QObject):
                 self.applied_parameters = self.parameters.copy()
         else:
             self.logger.warning("Detector parameters not found.")
+            LogObject().print("Warning: Detector parameters not found.")
 
         if "bg_subtractor" in param_dict.keys():
             self.bg_subtractor.mog_parameters.setParameterDict(
@@ -362,6 +379,7 @@ class Detector(QtCore.QObject):
                 self.bg_subtractor.applyParameters()
         else:
             self.logger.warning("Background subtractor parameters not found.")
+            LogObject().print("Warning: Background subtractor parameters not found.")
 
     def bgSubtraction(self, image):
         median_size = self.parameters.getParameter(
@@ -440,6 +458,7 @@ class Detector(QtCore.QObject):
                 columns=columns,
             )
             self.logger.info(f"Detections saved to path: {path}")
+            LogObject().print(f"Detections saved to path: {path}")
 
         except PermissionError:
             self.logger.error(f"Cannot open file {path}. Permission denied.")
@@ -500,12 +519,20 @@ class Detector(QtCore.QObject):
                         f"Encountered {ignored_dets} detections that were out of range "
                         f"{nof_frames}."
                     )
+                    LogObject().print(
+                        f"Warning: Encountered {ignored_dets} detections that were out of range "
+                        f"{nof_frames}."
+                    )
 
         except PermissionError:
             self.logger.error(f"Cannot open file {path}. Permission denied.")
         except ValueError as e:
             self.logger.error(
                 f"Invalid values encountered in {path}, "
+                f"when trying to import detections. {e}"
+            )
+            LogObject().print(
+                f"Error: Invalid values encountered in {path}, "
                 f"when trying to import detections. {e}"
             )
 
@@ -828,6 +855,7 @@ class DetectorDisplay:
             self.readParameters()
             images = self.detector.compute(i, self.getFrame(i), True)
             self.logger.info(images)
+            LogObject().print(f"Images: {images}")
             self.updateWindows(*images)
 
     def showWindow(self):

@@ -29,6 +29,7 @@ from tqdm import tqdm
 from fishtracker.core.processing.sort import KalmanBoxTracker, Sort
 from fishtracker.parameters.filter_parameters import FilterParameters
 from fishtracker.parameters.tracker_parameters import TrackerParameters
+from fishtracker.utils.log_object import LogObject
 
 
 class TrackingState(Enum):
@@ -129,6 +130,7 @@ class Tracker(QtCore.QObject):
             # Return if the applied detector parameters are not up to date
             if self.detector.allCalculationAvailable():
                 self.logger.warning("Stopped before tracking.")
+                LogObject().print("Warning: Stopped before tracking.")
                 self.abortComputing(True)
                 return
 
@@ -204,6 +206,7 @@ class Tracker(QtCore.QObject):
         """
 
         self.logger.info(tracker_parameters)
+        LogObject().print(f"Tracker parameters: {tracker_parameters}")
 
         self.stop_tracking = False
         count = len(detection_frames)
@@ -223,9 +226,22 @@ class Tracker(QtCore.QObject):
         if reset_count:
             KalmanBoxTracker.count = 0
 
+        progress_interval = max(1, count // 10)
+
         for i, dets in enumerate(tqdm(detection_frames, desc="Tracking")):
+            if i % progress_interval == 0 or i == count - 1:
+                percentage_complete = (i / count) * 100 if count > 0 else 0
+                LogObject().print(
+                    f"Tracking... {percentage_complete:.0f}% ({i}/{count} frames)"
+                )
+
             if self.stop_tracking:
+                percentage_complete = (i / count) * 100 if count > 0 else 0
                 self.logger.error("Stopped tracking at", i)
+                LogObject().print(
+                    f"Error: Stopped tracking at frame {i}/{count} "
+                    f"({percentage_complete:.1f}% complete)"
+                )
                 self.abortComputing(False)
                 return {}
 
@@ -363,6 +379,9 @@ class Tracker(QtCore.QObject):
             self.setAllParameters(all_params)
         except TypeError as e:
             self.logger.error(f"Cannot set parameters from dictionary. Error: {e}")
+            LogObject().print(
+                f"Error: Cannot set parameters from dictionary. Error: {e}"
+            )
 
 
 class AllTrackerParameters(QtCore.QObject):

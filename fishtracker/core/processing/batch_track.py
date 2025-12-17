@@ -35,6 +35,7 @@ from fishtracker.core.tracking.tracker import (
 )
 from fishtracker.managers.playback_manager import Worker
 from fishtracker.parameters.detector_parameters import DetectorParameters
+from fishtracker.utils.log_object import LogObject
 
 
 class BatchTrackInfo:
@@ -78,8 +79,10 @@ class BatchTrack(QtCore.QObject):
         super().__init__()
         self.logger = logging.getLogger(__name__)
         self.logger.info(f"Display: {display}")
+        LogObject().print(f"Display: {display}")
 
         self.logger.info(params_detector)
+        LogObject().print(f"Detector parameters: {params_detector}")
 
         self.files = files
         self.display = display
@@ -90,16 +93,19 @@ class BatchTrack(QtCore.QObject):
 
         if save_detections is None:
             self.logger.info("Using save_detections from conf.json.")
+            LogObject().print("Using save_detections from conf.json.")
             self.save_detections = fh.getConfValue(fh.ConfKeys.batch_save_detections)
         else:
             self.save_detections = save_detections
         if save_tracks is None:
             self.logger.info("Using save_tracks from conf.json.")
+            LogObject().print("Using save_tracks from conf.json.")
             self.save_tracks = fh.getConfValue(fh.ConfKeys.batch_save_tracks)
         else:
             self.save_tracks = save_tracks
         if save_complete is None:
             self.logger.info("Using save_complete from conf.json.")
+            LogObject().print("Using save_complete from conf.json.")
             self.save_complete = fh.getConfValue(fh.ConfKeys.batch_save_complete)
         else:
             self.save_complete = save_complete
@@ -108,12 +114,14 @@ class BatchTrack(QtCore.QObject):
 
         if params_detector is None:
             self.logger.info("Using default parameters for Detector.")
+            LogObject().print("Using default parameters for Detector.")
             self.detector_params = DetectorParameters()
         else:
             self.detector_params = params_detector
 
         if params_tracker is None:
             self.logger.info("Using default parameters for Tracker.")
+            LogObject().print("Using default parameters for Tracker.")
             primary = TrackerParameters()
             filter = FilterParameters()
             secondary = TrackerParameters()
@@ -152,6 +160,7 @@ class BatchTrack(QtCore.QObject):
         worker = Worker(self.communicate)
         self.thread_pool.start(worker)
         self.logger.info(f"Creating workers for {self.total_processes} files")
+        LogObject().print(f"Creating workers for {self.total_processes} files")
 
         # If using test file (defined in conf.json)
         if test:
@@ -168,6 +177,7 @@ class BatchTrack(QtCore.QObject):
                 self.n_processes += 1
 
         self.logger.info(f"Total processes: {self.n_processes}")
+        LogObject().print(f"Total processes: {self.n_processes}")
 
     def startProcess(self, file, id, test):
         parent_conn, child_conn = mp.Pipe()
@@ -185,6 +195,7 @@ class BatchTrack(QtCore.QObject):
         """
 
         self.logger.info(f"Starting process: {bt_info.file}")
+        LogObject().print(f"Starting process: {bt_info.file}")
 
         self.active_processes.append(bt_info.id)
         self.active_processes_changed_signal.emit()
@@ -223,6 +234,7 @@ class BatchTrack(QtCore.QObject):
         Reduces n_processes by one and if none are remaining, emits the exit_signal
         """
         self.logger.info(f"File {bt_info.file} finished.")
+        LogObject().print(f"File {bt_info.file} finished.")
         self.n_processes -= 1
         if self.n_processes <= 0:
             # Let main thread (running communicate) know the process is about to quit
@@ -240,6 +252,7 @@ class BatchTrack(QtCore.QObject):
         """
         self.thread_pool.clear()
         self.logger.info("Terminating")
+        LogObject().print("Terminating")
         self.state = ProcessState.TERMINATING
 
     def communicate(self):
@@ -259,6 +272,9 @@ class BatchTrack(QtCore.QObject):
                     and bt_info.connection.poll()
                 ):
                     self.logger.info(bt_info.id, bt_info.connection.recv(), end="")
+                    LogObject().print(
+                        f"Process {bt_info.id}: {bt_info.connection.recv()}"
+                    )
             time.sleep(0.01)
 
         if self.state is ProcessState.TERMINATING:
@@ -286,6 +302,7 @@ class BatchTrack(QtCore.QObject):
                     # Received message with no id
                     continue
             self.logger.info(f"File [{bt_info.id}] terminated.")
+            LogObject().print(f"File [{bt_info.id}] terminated.")
 
         for bt_info in self.processes:
             if bt_info.process is not None:

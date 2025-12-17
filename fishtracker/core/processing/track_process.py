@@ -33,6 +33,7 @@ from fishtracker.core.detection.detector import Detector, DetectorParameters
 from fishtracker.core.fish.fish_manager import FishManager
 from fishtracker.core.tracking.tracker import Tracker, TrackingState
 from fishtracker.managers.playback_manager import PlaybackManager, TestFigure
+from fishtracker.utils.log_object import LogObject
 from fishtracker.utils.save_manager import SaveManager
 
 
@@ -305,6 +306,7 @@ class TrackProcess(QtCore.QObject):
             self.save_manager.saveFile(save_path, self.binary)
 
         self.logger.info(f"Results saved to {self.save_directory}")
+        LogObject().print(f"Results saved to {self.save_directory}")
 
     def onAllComputed(self, tracking_state):
         """
