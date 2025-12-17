@@ -531,22 +531,22 @@ class PlaybackThread(QRunnable):
 
     def loadPolarFrames(self):
         count = self.sonar.frameCount
-        progress_interval = max(
-            1, count // 10
-        )
+        progress_interval = max(1, count // 10)
         i = 0
         for i in tqdm(range(count), desc="Loading polar frames"):
             if not self.alive:  # bail out early if needed
                 percentage_complete = (i / count) * 100 if count > 0 else 0
                 LogObject().print(
-                    f"Loading stopped at frame {i}/{count} ({percentage_complete:.1f}% complete)"
+                    f"Loading stopped at frame {i}/{count} "
+                    f"({percentage_complete:.1f}% complete)"
                 )
                 break
 
             if i % progress_interval == 0 or i == count - 1:
                 percentage_complete = (i / count) * 100 if count > 0 else 0
                 LogObject().print(
-                    f"Loading polar frames... {percentage_complete:.0f}% ({i}/{count} frames)"
+                    f"Loading polar frames: {percentage_complete:.0f}% "
+                    f"({i}/{count} frames)"
                 )
 
             while self.pause_polar_loading:  # “pause” mode

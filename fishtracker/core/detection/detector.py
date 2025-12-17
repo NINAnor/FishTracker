@@ -520,8 +520,8 @@ class Detector(QtCore.QObject):
                         f"{nof_frames}."
                     )
                     LogObject().print(
-                        f"Warning: Encountered {ignored_dets} detections that were out of range "
-                        f"{nof_frames}."
+                        f"Warning: Encountered {ignored_dets} detections that were "
+                        f"out of range {nof_frames}."
                     )
 
         except PermissionError:
