@@ -31,6 +31,7 @@ from PyQt5.QtCore import Qt
 import fishtracker.utils.file_handler as fh
 from fishtracker.parameters.filter_parameters import FilterParameters
 from fishtracker.parameters.tracker_parameters import TrackerParameters
+from fishtracker.utils.log_object import LogObject
 
 fish_headers = [
     "",
@@ -257,6 +258,9 @@ class FishManager(QtCore.QAbstractTableModel):
             except IndexError:
                 if row >= len(self.fish_list):
                     self.logger.error(f"Bad index {row}/{len(self.fish_list) - 1}")
+                    LogObject().print(
+                        f"Error: Bad index {row}/{len(self.fish_list) - 1}"
+                    )
                 return QtCore.QVariant()
         else:
             return QtCore.QVariant()
@@ -598,14 +602,17 @@ class FishManager(QtCore.QAbstractTableModel):
             self.mad_limit = mad_limit
 
         self.logger.info(f"Fish before applying filters: {len(self.all_fish)}")
+        LogObject().print(f"Fish before applying filters: {len(self.all_fish)}")
         self.applyFilters()
         self.logger.info(f"Fish after applying filters: {len(self.all_fish)}")
+        LogObject().print(f"Fish after applying filters: {len(self.all_fish)}")
 
         used_dets = self.getDetectionsInFish()
         count = 0
         for _, dets in used_dets.items():
             count += len(dets)
         self.logger.info(f"Total detections used in filtered results: {count}")
+        LogObject().print(f"Total detections used in filtered results: {count}")
 
         self.min_detections = temp_min_detections
         self.mad_limit = temp_mad_limit
@@ -748,6 +755,7 @@ class FishManager(QtCore.QAbstractTableModel):
         """
         if self.playback_manager.playback_thread is None:
             self.logger.error("No file open, cannot save.")
+            LogObject().print("Error: No file open, cannot save.")
             return
 
         try:

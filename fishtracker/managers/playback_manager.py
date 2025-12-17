@@ -531,10 +531,23 @@ class PlaybackThread(QRunnable):
 
     def loadPolarFrames(self):
         count = self.sonar.frameCount
+        progress_interval = max(1, count // 10)
         i = 0
         for i in tqdm(range(count), desc="Loading polar frames"):
             if not self.alive:  # bail out early if needed
+                percentage_complete = (i / count) * 100 if count > 0 else 0
+                LogObject().print(
+                    f"Loading stopped at frame {i}/{count} "
+                    f"({percentage_complete:.1f}% complete)"
+                )
                 break
+
+            if i % progress_interval == 0 or i == count - 1:
+                percentage_complete = (i / count) * 100 if count > 0 else 0
+                LogObject().print(
+                    f"Loading polar frames: {percentage_complete:.0f}% "
+                    f"({i}/{count} frames)"
+                )
 
             while self.pause_polar_loading:  # “pause” mode
                 time.sleep(0.1)
@@ -612,7 +625,9 @@ class Worker(QRunnable):
             # Log the exception to a file
             exctype, value = sys.exc_info()[:2]
             self.logger.error(f"Exception occurred: {exctype} - {value}")
+            LogObject().print(f"Error: Exception occurred: {exctype} - {value}")
             self.logger.error("Exception occurred", exc_info=True)
+            LogObject().print("Error: Exception occurred - see logs for details")
             self.signals.error.emit((exctype, value, traceback.format_exc()))
         else:
             # Return the result of the processing
