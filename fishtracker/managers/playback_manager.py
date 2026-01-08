@@ -432,10 +432,51 @@ class PlaybackManager(QObject):
 
     def getFrameTimeStamp(self):
         """
-        Return frame sonar time stamp.
+        Return frame sonar time stamp for the current frame.
         """
-        if self.sonar:
-            return self.sonar.frameTime
+        if self.sonar and self.playback_thread:
+            # Get the current display frame index
+            frame_index = self.playback_thread.display_ind
+
+            # Create a frame object to access its sonar timestamp
+            try:
+                if self.sonar.version == "ARIS":  # v5
+                    from fishtracker.core.file_handlers.v5.v5_frame_info import v5_Frame
+
+                    frame = v5_Frame(
+                        self.sonar.FILE_PATH,
+                        frame_index,
+                        self.sonar.samplesPerBeam * self.sonar.BEAM_COUNT,
+                    )
+                    return frame.sonarTimeStamp
+                elif self.sonar.version == "DDF_04":  # v4
+                    from fishtracker.core.file_handlers.v4.v4_frame_info import v4_Frame
+
+                    frame = v4_Frame(
+                        self.sonar.FILE_PATH,
+                        frame_index,
+                        self.sonar.samplesPerBeam * self.sonar.BEAM_COUNT,
+                    )
+                    return frame.sonarTimeStamp
+                elif self.sonar.version == "DDF_03":  # v3
+                    from fishtracker.core.file_handlers.v3.v3_frame_info import v3_Frame
+
+                    frame = v3_Frame(
+                        self.sonar.FILE_PATH,
+                        frame_index,
+                        self.sonar.samplesPerBeam * self.sonar.BEAM_COUNT,
+                        self.sonar.samplesPerBeam,
+                        self.sonar.BEAM_COUNT,
+                        self.sonar.frameTime,
+                        self.sonar.frameRate,
+                    )
+                    return frame.sonarTimeStamp
+                else:
+                    # Fallback to the old behavior for other formats
+                    return self.sonar.frameTime
+            except Exception:
+                # If frame creation fails, fallback to the old behavior
+                return self.sonar.frameTime
         else:
             return None
 

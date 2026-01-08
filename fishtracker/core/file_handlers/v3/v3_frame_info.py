@@ -36,7 +36,16 @@ class v3_Frame:
     FRAME_NUMBER = None
     IMAGE = None
 
-    def __init__(self, filename, frameIndexInp, frameSize):
+    def __init__(
+        self,
+        filename,
+        frameIndexInp,
+        frameSize,
+        samplesPerBeam=None,
+        beamCount=None,
+        fileStartTime=None,
+        frameRate=None,
+    ):
         # frameIndex = frameIndexInp - 1
         self.FRAME_NUMBER = frameIndexInp
         try:
@@ -44,10 +53,10 @@ class v3_Frame:
                 frameoffset = 1024 + (frameIndexInp * (1024 + (frameSize)))
                 fhand.seek(frameoffset, 0)
                 self.frameIndex = struct.unpack(
-                    utils.cType["uint64_t"], fhand.read(utils.c("uint64_t"))
+                    utils.cType["uint32_t"], fhand.read(utils.c("uint32_t"))
                 )[0]
                 self.frameTime = struct.unpack(
-                    utils.cType["uint32_t"], fhand.read(utils.c("uint32_t"))
+                    utils.cType["uint64_t"], fhand.read(utils.c("uint64_t"))
                 )[0]
                 self.version = struct.unpack(
                     utils.cType["uint32_t"], fhand.read(utils.c("uint32_t"))
@@ -382,6 +391,9 @@ class v3_Frame:
                 self.samplesPerBeam = struct.unpack(
                     utils.cType["uint32_t"], fhand.read(utils.c("uint32_t"))
                 )[0]
+                # Override with passed parameter (frame header may be corrupted)
+                if samplesPerBeam is not None:
+                    self.samplesPerBeam = samplesPerBeam
                 self.enable150V = struct.unpack(
                     utils.cType["uint32_t"], fhand.read(utils.c("uint32_t"))
                 )[0]
@@ -584,7 +596,19 @@ class v3_Frame:
                 # Functions Section
                 ###########################
                 self.BEAM_COUNT = self.getBeamsFromPingMode(self.pingMode)
+                # Override with passed parameter (frame header may be corrupted)
+                if beamCount is not None:
+                    self.BEAM_COUNT = beamCount
                 self.FRAME_DATA = self.readData(frameoffset, fhand)
+
+                # Calculate correct timestamps if file header info is provided
+                if fileStartTime is not None and frameRate is not None:
+                    # Calculate frame timestamp based on file start time and frame rate
+                    frame_time_seconds = fileStartTime + (frameIndexInp / frameRate)
+                    self.frameTime = int(
+                        frame_time_seconds * 1000000
+                    )  # Convert to microseconds
+                    self.sonarTimeStamp = self.frameTime  # Use same value for both
 
         except FileNotFoundError as e:
             raise FileNotFoundError(e.errno, e.strerror, filename) from e
@@ -834,3 +858,7 @@ class v3_Frame:
             return True
         else:
             return False
+
+
+# Alias for backward compatibility
+ARIS_Frame = v3_Frame
